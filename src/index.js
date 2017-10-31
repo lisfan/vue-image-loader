@@ -5,18 +5,21 @@
  */
 
 import validation from '@~lisfan/validation'
-import { addAnimationEnd, removeAnimationEnd } from 'utils/animation-handler'
-import VueLogger from 'plugins/vue-logger'
+import VueLogger from '@~lisfan/vue-logger'
+import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
-const imageLoad = {} // 插件对象
-const directiveName = 'image-load' // 指令名称
-const logger = new VueLogger(`directive-${directiveName}`)
+let ImagePlaceholder = {} // 插件对象
+const DIRECTIVE_NAMESPACE = 'image-placeholder' // 指令名称
+const PLUGIN_TYPE = 'directive'
+
+const vueLogger = new VueLogger(`${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`)
 
 // 透明图片base64
-const phTransparentImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
+const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
 
 /**
- * 请求图片
+ * 请求图片资源
+ *
  * @param {element} $el - 目标dom元素
  * @param {string} imgSrc - 请求图片地址
  * @param {VNode} vnode - vue 节点实例
@@ -42,9 +45,9 @@ function requestImage($el, imgSrc, vnode) {
 
   // 判断dom元素标签名，若为img元素，则设置透明图片占位
   if ($el.nodeName === 'IMG') {
-    $el.setAttribute('src', phTransparentImage)
+    $el.setAttribute('src', PLACEHOLDER_IMAGE)
   } else {
-    $el.style.backgroundImage = 'url("' + phTransparentImage + '")'
+    $el.style.backgroundImage = 'url("' + PLACEHOLDER_IMAGE + '")'
   }
 
   // 绑定动画结束事件
@@ -69,24 +72,24 @@ function requestImage($el, imgSrc, vnode) {
     requestAnimationFrame(() => {
       $image = null // 销毁
       if ($el.nodeName === 'IMG') {
-      $el.setAttribute('src', currentImgSrc)
-    } else {
-      $el.style.backgroundImage = 'url("' + currentImgSrc + '")'
-    }
+        $el.setAttribute('src', currentImgSrc)
+      } else {
+        $el.style.backgroundImage = 'url("' + currentImgSrc + '")'
+      }
 
-    if (!$el.imageComplete && vnode.context.$$enableAnimate && $el.animationClassName) {
-      const enterClassNameList = $el.oriClassNameList.slice()
-      enterClassNameList.push($el.animationClassName + '-enter')
-      $el.setAttribute('class', enterClassNameList.join(' ').trim())
+      if (!$el.imageComplete && vnode.context.$$enableAnimate && $el.animationClassName) {
+        const enterClassNameList = $el.oriClassNameList.slice()
+        enterClassNameList.push($el.animationClassName + '-enter')
+        $el.setAttribute('class', enterClassNameList.join(' ').trim())
 
-      // 至于下一事件循环
-      Promise.resolve().then(() => {
-        const enterActiveClassNameList = $el.oriClassNameList.slice()
-        enterActiveClassNameList.push($el.animationClassName + '-enter-active')
-      $el.setAttribute('class', enterActiveClassNameList.join(' ').trim())
+        // 至于下一事件循环
+        Promise.resolve().then(() => {
+          const enterActiveClassNameList = $el.oriClassNameList.slice()
+          enterActiveClassNameList.push($el.animationClassName + '-enter-active')
+          $el.setAttribute('class', enterActiveClassNameList.join(' ').trim())
+        })
+      }
     })
-    }
-  })
   }
 
   /**
@@ -100,7 +103,7 @@ function requestImage($el, imgSrc, vnode) {
       $image.src = currentImgSrc
       isRequestPhImage = true
     } else {
-      currentImgSrc = phTransparentImage
+      currentImgSrc = PLACEHOLDER_IMAGE
       $image.src = currentImgSrc
       // $image = null // 销毁
     }
@@ -121,19 +124,19 @@ function requestImage($el, imgSrc, vnode) {
  * 暴露install钩子，供vue注册
  * @param {Vue} Vue - Vue构造器类
  */
-imageLoad.install = function (Vue) {
-  Vue.directive(directiveName, {
+ImagePlaceholder.install = function (Vue) {
+  Vue.directive(DIRECTIVE_NAMESPACE, {
     /**
      * 组件绑定
      * @param {Element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
-    bind ($el, binding, vnode) {
-      logger.log(vnode.context, '组件bind')
+    bind($el, binding, vnode) {
+      vueLogger.log(vnode.context, '组件bind')
 
       // 在目标节点上绑定该指令标识
-      $el.setAttribute(`v-${directiveName}`, '')
+      $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
 
       // 设置一些初次绑定保存的数据
       // 保存默认占位图片的值
@@ -181,8 +184,8 @@ imageLoad.install = function (Vue) {
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
-    update ($el, binding, vnode) {
-      logger.log(vnode.context, '组件update')
+    update($el, binding, vnode) {
+      vueLogger.log(vnode.context, '组件update')
 
       const newImageSrc = $el.getAttribute('image-src') || ''
       // 当图片地址有变化时，更新
@@ -195,4 +198,4 @@ imageLoad.install = function (Vue) {
   })
 }
 
-export default imageLoad
+export default ImagePlaceholder
