@@ -1,6 +1,6 @@
 {
   "name": "@~lisfan/vue-image-placeholder",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "vue指令插件-占位图片加载器：若请求的资源图片加载失败，使用默认占位图片代替",
   "main": "src/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   "homepage": "https://github.com/lisfan/vue-image-placeholder#readme",
   "dependencies": {
     "@~lisfan/logger": "~1.3.0-rc.0",
-    "@~lisfan/validation": "~1.0.0-rc.0"
+    "@~lisfan/validation": "~1.0.0-rc.12"
   },
   "devDependencies": {
     "docdash": "~0.4.0",
