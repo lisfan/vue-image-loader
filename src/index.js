@@ -12,187 +12,246 @@ let ImagePlaceholder = {} // 插件对象
 const DIRECTIVE_NAMESPACE = 'image-placeholder' // 指令名称
 const PLUGIN_TYPE = 'directive'
 
-const vueLogger = new VueLogger(`${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`)
-
 // 透明图片base64
 const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
 
-/**
- * 请求图片资源
- *
- * @param {element} $el - 目标dom元素
- * @param {string} imgSrc - 请求图片地址
- * @param {VNode} vnode - vue 节点实例
- */
-function requestImage($el, imgSrc, vnode) {
-  // 是否在请求占位图片的步骤，若请求占位图片也失败，则会使用透明图片代替占位
-  // 如果动态地址和占位地址相同，则直接认为是在请求占位图片的步骤
-  let isRequestPhImage = false
-  if (imgSrc === $el.phImageSrc) {
-    isRequestPhImage = true
-  }
-
-  let $image = new Image()
-  let currentImgSrc = imgSrc
-  $image.src = currentImgSrc
-
-  // 如果这张图片已下载过，且开启强制动效
-  if ($image.complete && !$el.enableForceEffect) {
-    $el.imageComplete = true
-  } else {
-    $el.imageComplete = false
-  }
-
-  // 判断dom元素标签名，若为img元素，则设置透明图片占位
-  if ($el.nodeName === 'IMG') {
-    $el.setAttribute('src', PLACEHOLDER_IMAGE)
-  } else {
-    $el.style.backgroundImage = 'url("' + PLACEHOLDER_IMAGE + '")'
-  }
-
-  // 绑定动画结束事件
-  // 是否已开启动画
-  if (vnode.context.$$enableAnimate && $el.animationClassName) {
-    // 若已绑定则不再重复绑定
-    const animationEndHandler = function () {
-      const enterEndClassNameList = $el.oriClassNameList.slice()
-      enterEndClassNameList.push($el.animationClassName + '-enter-end')
-      $el.setAttribute('class', enterEndClassNameList.join(' ').trim())
-      removeAnimationEnd($el, animationEndHandler)
-    }
-    // 绑定动画结束事件
-    addAnimationEnd($el, animationEndHandler)
-  }
-
+// 私有方法
+const _actions = {
   /**
-   * 图片请求成功事件
+   * 设置图片地址
+   * @param {element} $el - 目标dom元素
+   * @param {string} imgSrc - 图片地址
    */
-  const successHandler = function () {
-    // 图片分布式加载，不要在同一时间内同时加载
-    requestAnimationFrame(() => {
-      $image = null // 销毁
-      if ($el.nodeName === 'IMG') {
-        $el.setAttribute('src', currentImgSrc)
-      } else {
-        $el.style.backgroundImage = 'url("' + currentImgSrc + '")'
-      }
-
-      if (!$el.imageComplete && vnode.context.$$enableAnimate && $el.animationClassName) {
-        const enterClassNameList = $el.oriClassNameList.slice()
-        enterClassNameList.push($el.animationClassName + '-enter')
-        $el.setAttribute('class', enterClassNameList.join(' ').trim())
-
-        // 至于下一事件循环
-        Promise.resolve().then(() => {
-          const enterActiveClassNameList = $el.oriClassNameList.slice()
-          enterActiveClassNameList.push($el.animationClassName + '-enter-active')
-          $el.setAttribute('class', enterActiveClassNameList.join(' ').trim())
-        })
-      }
-    })
-  }
-
-  /**
-   * 图片请求失败事件
-   */
-  const failHandler = function () {
-    // 如果是二次加载图片且又失败
-    // 则使用透明图片代替
-    if (!isRequestPhImage) {
-      currentImgSrc = $el.phImageSrc
-      $image.src = currentImgSrc
-      isRequestPhImage = true
+  setImageSrc($el, imgSrc) {
+    if ($el.nodeName === 'IMG') {
+      $el.setAttribute('src', imgSrc)
     } else {
-      currentImgSrc = PLACEHOLDER_IMAGE
-      $image.src = currentImgSrc
-      // $image = null // 销毁
+      $el.style.backgroundImage = 'url("' + imgSrc + '")'
+    }
+  },
+  /**
+   * 请求图片资源
+   *
+   * @param {element} $el - 目标dom元素
+   * @param {string} imgSrc - 请求图片地址
+   * @param {boolean} animate - 全局配置，是否进行动效
+   * @param {Vue} vm - vue实例
+   * @param {VueLogger} vueLogger - logger日志
+   */
+  requestImage($el, imgSrc, animate, vm, vueLogger) {
+    // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
+    // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
+    $el.isRequestPHImage = false
+
+    if (imgSrc === $el.phImageSrc) {
+      $el.isRequestPHImage = true
     }
 
-    // 如果这张图片已下载过，且开启强制动效
+    let $image = new Image()
+    $image.src = imgSrc
+    $el.currentImgSrc = imgSrc
+
+    // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
     if ($image.complete && !$el.enableForceEffect) {
       $el.imageComplete = true
     } else {
       $el.imageComplete = false
     }
-  }
 
-  $image.addEventListener('error', failHandler)
-  $image.addEventListener('load', successHandler)
+    // 判断dom元素标签名，若为img标签元素，则设置透明图片占位，否则设置为该元素的背景
+    _actions.setImageSrc($el, PLACEHOLDER_IMAGE)
+
+    // 为dom元素绑定动画结束事件
+    if (animate && $el.animationClassName) {
+      // 若已绑定则不再重复绑定
+      const animationEndHandler = function () {
+        const enterEndClassNameList = $el.originClassNameList.slice()
+        enterEndClassNameList.push($el.animationClassName + '-enter-end')
+        $el.setAttribute('class', enterEndClassNameList.join(' ').trim())
+
+        // 动画结束后移除绑定事件
+        removeAnimationEnd($el, animationEndHandler)
+      }
+
+      // 为节点绑定动画结束事件
+      addAnimationEnd($el, animationEndHandler)
+    }
+
+    $image.addEventListener('load', _actions.successHandler($el, $image, animate, vm, vueLogger))
+
+    $image.addEventListener('error', _actions.failHandler($el, $image, vm, vueLogger))
+  },
+  /**
+   * 图片请求成功事件
+   * @param {element} $el - 目标dom元素
+   * @param {element} $image - 虚拟图片元素
+   * @param {boolean} animate - 全局配置，是否进行动效
+   * @param {Vue} vm - vue实例
+   * @param {VueLogger} vueLogger - logger日志
+   */
+  successHandler($el, $image, animate, vm, vueLogger) {
+    return function () {
+      // 性能优化：图片延迟加载，不要在同一时间内同时加载
+      requestAnimationFrame(() => {
+        vueLogger.log(vm, 'image load successed:', $el.currentImgSrc)
+
+        $image = null // 销毁
+
+        // 设置图片地址
+        _actions.setImageSrc($el, $el.currentImgSrc)
+
+        // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
+        if (!$el.imageComplete && animate && $el.animationClassName) {
+          vueLogger.log(vnode.context, 'animation ing...')
+
+          const enterClassNameList = $el.originClassNameList.slice()
+          enterClassNameList.push($el.animationClassName + '-enter')
+          $el.setAttribute('class', enterClassNameList.join(' ').trim())
+
+          // 置于下一帧
+          requestAnimationFrame(() => {
+            const enterActiveClassNameList = $el.originClassNameList.slice()
+            enterActiveClassNameList.push($el.animationClassName + '-enter-active')
+            $el.setAttribute('class', enterActiveClassNameList.join(' ').trim())
+          })
+        }
+      })
+    }
+  },
+  /**
+   * 图片请求失败事件
+   * @param {element} $el - 目标dom元素
+   * @param {element} $image - 虚拟图片元素
+   * @param {Vue} vm - vue实例
+   * @param {VueLogger} vueLogger - logger日志
+   */
+  failHandler($el, $image, vm, vueLogger) {
+    return function () {
+      vueLogger.log(vm, 'image load faild:', $el.currentImgSrc)
+
+      // 如果是二次加载图片且又失败
+      // 则使用透明图片代替
+      if (!$el.isRequestPHImage) {
+        $el.currentImgSrc = $el.phImageSrc
+        $image.src = $el.currentImgSrc
+        $el.isRequestPHImage = true
+      } else {
+        $el.currentImgSrc = PLACEHOLDER_IMAGE
+        $image.src = $el.currentImgSrc
+        // $image = null // 销毁
+      }
+      //
+      // // 如果这张图片已下载过，且开启强制动效
+      // if ($image.complete && !$el.enableForceEffect) {
+      //   $el.imageComplete = true
+      // } else {
+      //   $el.imageComplete = false
+      // }
+    }
+  }
 }
 
 /**
  * 暴露install钩子，供vue注册
  * @param {Vue} Vue - Vue构造器类
+ * @param {object} [options={}] - 配置选项
+ * @param {number} [options.debug=false] - 是否开启日志调试模式，默认关闭
+ * @param {number} [options.remRatio=100] - rem与px的比便关系，默认值为100，表示1rem=100px
+ * @param {number} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
+ * @param {number} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
  */
-ImagePlaceholder.install = function (Vue) {
+ImagePlaceholder.install = function (Vue, {
+  debug = false,
+  remRatio = 100,
+  animate = true,
+  force = false,
+} = {}) {
+  const vueLogger = new VueLogger({
+    name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
+    debug
+  })
+
+  // 注册指令
   Vue.directive(DIRECTIVE_NAMESPACE, {
     /**
-     * 组件绑定
+     * 初始绑定
      * @param {Element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
     bind($el, binding, vnode) {
-      vueLogger.log(vnode.context, '组件bind')
+      vueLogger.log(vnode.context, '触发bind钩子')
 
       // 在目标节点上绑定该指令标识
       $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
 
-      // 设置一些初次绑定保存的数据
+      // 在dom实例上绑定一些初次绑定保存的数据
       // 保存默认占位图片的值
       $el.phImageSrc = $el.getAttribute('placeholder') || ''
       $el.imageSrc = $el.getAttribute('image-src') || ''
 
       // 保存原dom元素class类名
-      const oriClassName = $el.getAttribute('class') || ''
-      $el.oriClassNameList = oriClassName.split(' ')
+      const originClassName = $el.getAttribute('class') || ''
+      $el.originClassNameList = originClassName.split(' ')
 
       // 自定义动画类
       $el.animationClassName = binding.value || ''
-      // 是否开启强制动效
-      $el.enableForceEffect = binding.modifiers.forceEffect || false
 
-      // 自定义的高宽值
-      $el.sizeList = []
+      // 是否强制开启每次载入动效
+      $el.enableForceEffect = binding.modifiers.force || false
+
+      // 是否自定义了高宽值
+      let sizeList = []
 
       if (binding.arg) {
-        $el.sizeList = binding.arg.split('x')
+        sizeList = binding.arg.split('x')
       }
 
-      $el.sizeList = $el.sizeList.slice(0, 2)
-      const rootFontRule = document.documentElement.getAttribute('data-rem-rule')
+      // 只截取前两个的值
+      let [width, height] = sizeList.slice(0, 2)
 
-      // 设置目标元素的高度
-      if ($el.sizeList.length === 2) {
-        $el.style.width = ($el.sizeList[0] / rootFontRule) + 'rem'
-        $el.style.height = ($el.sizeList[1] / rootFontRule) + 'rem'
-      } else if ($el.sizeList.length === 1) {
-        $el.style.width = ($el.sizeList[0] / rootFontRule) + 'rem'
-        $el.style.height = ($el.sizeList[0] / rootFontRule) + 'rem'
+      height = height || width
+
+      // 设置目标元素的高宽
+      // [注]：他拉伸的是直接的元素高度，不不会自适应缩放
+      // 减少重绘，注意留空
+      if (width && height) {
+        const widthStyle = (width / remRatio ) + 'rem'
+        const heightStyle = (height / remRatio ) + 'rem'
+        $el.style = `width:${widthStyle}; height:${heightStyle}; ` + $el.style
+        vueLogger.log(vnode.context, 'width:', widthStyle)
+        vueLogger.log(vnode.context, 'height:', heightStyle)
       }
+
+      vueLogger.log(vnode.context, 'force animation effect:', $el.enableForceEffect)
+      vueLogger.log(vnode.context, 'animationClass:', $el.animationClassName)
+      vueLogger.log(vnode.context, 'image src:', $el.imageSrc)
+      vueLogger.log(vnode.context, 'placeholder image src:', $el.phImageSrc)
 
       if (validation.isEmpty($el.imageSrc)) {
-        requestImage($el, $el.phImageSrc, vnode)
+        vueLogger.log(vnode.context, '图片地址不存在，直接请求占位图片')
+        _actions.requestImage($el, $el.phImageSrc, animate, vnode.context, vueLogger)
       } else {
-        // 请求图片
-        requestImage($el, $el.imageSrc, vnode)
+        vueLogger.log(vnode.context, '图片地址存在，请求图片资源')
+        _actions.requestImage($el, $el.imageSrc, animate, vnode.context, vueLogger)
       }
     },
     /**
-     * 值更新
+     * 值进行了更新
      * @param {Element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
     update($el, binding, vnode) {
-      vueLogger.log(vnode.context, '组件update')
+      vueLogger.log(vnode.context, '触发update钩子')
 
       const newImageSrc = $el.getAttribute('image-src') || ''
-      // 当图片地址有变化时，更新
+      // 当图片地址有变化时，重新请求图片
       if ($el.imageSrc !== newImageSrc) {
         // 若强制启用了动效，则每次图片显示，都会执行动效
+        vueLogger.log(vnode.context, '图片地址有更新，重新进行图片请求')
         $el.imageSrc = newImageSrc
-        requestImage($el, $el.imageSrc, vnode)
+        _actions.requestImage($el, newImageSrc, animate, vnode.context, vueLogger)
       }
     }
   })
