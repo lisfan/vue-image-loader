@@ -4,14 +4,13 @@
   "description": "vue指令插件-图片加载器：若请求的资源图片加载失败，使用默认占位图片代替",
   "main": "src/index.js",
   "scripts": {
-    "prepublishOnly": "git pull",
-    "pub-prerelease": "npm version prerelease",
-    "pub-n": "npm run pub-prerelease && npm publish --tag nightly",
-    "pub-a": "npm run pub-prerelease && npm publish --tag alpha",
-    "pub-b": "npm run pub-prerelease && npm publish --tag beta",
-    "pub-rc": "npm run pub-prerelease && npm publish --tag rc",
-    "pub": "npm publish",
-    "postpublish": "git commit -am \"chore: publish@$npm_package_version\" && git push"
+    "pub-pre": "git pull && npm version prerelease",
+    "pub-post": "git commit -am \"chore: publish@$npm_package_version\" && git push",
+    "pub-n": "npm run pub-pre && npm publish --tag nightly && npm run pub-post",
+    "pub-a": "npm run pub-pre && npm publish --tag alpha && npm run pub-post",
+    "pub-b": "npm run pub-pre && npm publish --tag beta && npm run pub-post",
+    "pub-rc": "npm run pub-pre && npm publish --tag rc && npm run pub-post",
+    "pub": "npm publish && npm run pub-post"
   },
   "repository": {
     "type": "git",
