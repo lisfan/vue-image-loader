@@ -130,6 +130,7 @@ const _actions = {
   },
   /**
    * 图片请求失败事件
+   *
    * @param {element} $el - 目标dom元素
    * @param {element} $image - 虚拟图片元素
    * @param {Vue} vm - vue实例
@@ -194,7 +195,9 @@ ImageLoader.install = function (Vue, {
   Vue.directive(DIRECTIVE_NAMESPACE, {
     /**
      * 初始绑定
-     * @param {Element} $el - 目标dom元素
+     *
+     * @ignore
+     * @param {element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
@@ -258,7 +261,9 @@ ImageLoader.install = function (Vue, {
     },
     /**
      * 值进行了更新
-     * @param {Element} $el - 目标dom元素
+     * 
+     * @ignore
+     * @param {element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
