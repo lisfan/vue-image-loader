@@ -42,17 +42,19 @@ Vue.use(VueImageLoader,{
     remRatio: 100, // rem和px的比例
     animate: true, // 开启动效
     force: false, // 每次加载动效
+    placeholders:{ // 内置一些占位图片修饰符，进行快速引用
+      avatar: 'path/to/image'
+    }
 })
 ```
 
 ```html
 // 在img标签上使用，会被当成src图片
-- 使用格式：<img :placeholder='占位图片地址' :image-src="请求的图片地址" v-image-loader:WIDTHxHEIGHT='动效类名' />
-// 使用方法：<img :placeholder='phImgSrc' :image-src="imageSrc" v-image-loader:[[width]x[height]].[force]=[animationClassName] />
+// 调用格式：<img :placeholder='自定义占位图片地址' :image-src="请求图片地址" v-image-loader:[宽x高].[强制每次加载动效].[调用内置占位图片]='动效类名' />
 
-<img :placeholder='phImgSrc' :image-src="imageSrc" v-image-loader:[500x300].[force]=[mj-ani-fadeIn] />
+<img :placeholder='http://domain/ph.png' :image-src="http://domain/src.png" v-image-loader:500x300.force="'mj-ani-fadeIn'" />
 
 
 // 在非image标签上使用：会被当成背景图
-<!img :placeholder='phImgSrc' :image-src="imageSrc" v-image-loader:500x300='mj-ani-fadeIn'></!img>
+<!img :placeholder='http://domain/ph.png' :image-src="http://domain/src.png" v-image-loader:500x300.force="'mj-ani-fadeIn'"></!img>
 ```
