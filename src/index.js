@@ -207,8 +207,6 @@ ImageLoader.install = function (Vue, {
       // 在dom实例上绑定一些初次绑定保存的数据
       // 保存默认占位图片的值
       // 从修饰符对象中找出第一个匹配中的占位图片
-
-      console.log('_actions.getPlaceholderImage(binding, placeholders)', _actions.getPlaceholderImage(binding, placeholders))
       $el.phImageSrc = $el.getAttribute('placeholder') || _actions.getPlaceholderImage(binding, placeholders) || ''
       $el.imageSrc = $el.getAttribute('image-src') || ''
 
