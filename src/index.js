@@ -1,5 +1,5 @@
 /**
- * 占位图片加载器
+ * 图片加载器
  *
  * @version 1.2.0
  */
@@ -8,8 +8,8 @@ import validation from '@~lisfan/validation'
 import VueLogger from '@~lisfan/vue-logger'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
-let ImagePlaceholder = {} // 插件对象
-const DIRECTIVE_NAMESPACE = 'image-placeholder' // 指令名称
+let ImageLoad = {} // 插件对象
+const DIRECTIVE_NAMESPACE = 'image-loader' // 指令名称
 const PLUGIN_TYPE = 'directive'
 
 // 透明图片base64
@@ -102,7 +102,7 @@ const _actions = {
 
         // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
         if (!$el.imageComplete && animate && $el.animationClassName) {
-          vueLogger.log(vnode.context, 'animation ing...')
+          vueLogger.log(vm, 'animation ing...')
 
           const enterClassNameList = $el.originClassNameList.slice()
           enterClassNameList.push($el.animationClassName + '-enter')
@@ -160,7 +160,7 @@ const _actions = {
  * @param {number} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
  * @param {number} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
  */
-ImagePlaceholder.install = function (Vue, {
+ImageLoad.install = function (Vue, {
   debug = false,
   remRatio = 100,
   animate = true,
@@ -172,7 +172,7 @@ ImagePlaceholder.install = function (Vue, {
   })
 
   /**
-   * image-placeholder 指令
+   * image-loader 指令
    *
    * @param {number} [arg=false] - 参数
    * @param {number} [value=false] - 值
@@ -264,4 +264,4 @@ ImagePlaceholder.install = function (Vue, {
   })
 }
 
-export default ImagePlaceholder
+export default ImageLoad
