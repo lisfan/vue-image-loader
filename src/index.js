@@ -8,7 +8,7 @@ import validation from '@~lisfan/validation'
 import VueLogger from '@~lisfan/vue-logger'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
-let ImageLoad = {} // 插件对象
+let ImageLoader = {} // 插件对象
 const DIRECTIVE_NAMESPACE = 'image-loader' // 指令名称
 const PLUGIN_TYPE = 'directive'
 
@@ -17,6 +17,16 @@ const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 
 // 私有方法
 const _actions = {
+  // 获取第一个内置的占位图片
+  getPlaceholderImage(binding, placeholders) {
+    let placeholderImage
+
+    Object.keys(binding.modifiers).some((key) => {
+      return (placeholderImage = placeholders[key])
+    })
+
+    return placeholderImage
+  },
   /**
    * 设置图片地址
    * @param {element} $el - 目标dom元素
@@ -155,16 +165,18 @@ const _actions = {
  * 暴露install钩子，供vue注册
  * @param {Vue} Vue - Vue构造器类
  * @param {object} [options={}] - 配置选项
- * @param {number} [options.debug=false] - 是否开启日志调试模式，默认关闭
+ * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
  * @param {number} [options.remRatio=100] - rem与px的比便关系，默认值为100，表示1rem=100px
- * @param {number} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
- * @param {number} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
+ * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
+ * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
+ * @param {object} [options.placeholder=false] - 内置一些占位图片，key名会转换为修饰符
  */
-ImageLoad.install = function (Vue, {
+ImageLoader.install = function (Vue, {
   debug = false,
   remRatio = 100,
   animate = true,
   force = false,
+  placeholders = {}
 } = {}) {
   const vueLogger = new VueLogger({
     name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
@@ -194,7 +206,10 @@ ImageLoad.install = function (Vue, {
 
       // 在dom实例上绑定一些初次绑定保存的数据
       // 保存默认占位图片的值
-      $el.phImageSrc = $el.getAttribute('placeholder') || ''
+      // 从修饰符对象中找出第一个匹配中的占位图片
+
+      console.log('_actions.getPlaceholderImage(binding, placeholders)', _actions.getPlaceholderImage(binding, placeholders))
+      $el.phImageSrc = $el.getAttribute('placeholder') || _actions.getPlaceholderImage(binding, placeholders) || ''
       $el.imageSrc = $el.getAttribute('image-src') || ''
 
       // 保存原dom元素class类名
@@ -264,4 +279,4 @@ ImageLoad.install = function (Vue, {
   })
 }
 
-export default ImageLoad
+export default ImageLoader
