@@ -1,7 +1,8 @@
 /**
- * 图片加载器
- *
+ * @file 图片加载器
+ * @author lisfan <goolisfan@gmail.com>
  * @version 1.2.0
+ * @licence MIT
  */
 
 import validation from '@~lisfan/validation'
@@ -261,7 +262,7 @@ ImageLoader.install = function (Vue, {
     },
     /**
      * 值进行了更新
-     * 
+     *
      * @ignore
      * @param {element} $el - 目标dom元素
      * @param {object} binding - 指令对象
