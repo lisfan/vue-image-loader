@@ -9,6 +9,7 @@
 /**
  * 绑定动画结束事件
  *
+ * @ignore
  * @param {Element} $el - 目标dom元素
  * @param {function} handler - 事件处理器
  * @param {function} [useCapture=false] - 是否在捕获或冒泡阶段执行，false=冒泡(默认)，true=捕获
@@ -20,6 +21,8 @@ export function addAnimationEnd($el, handler, useCapture = false) {
 
 /**
  * 移除动画结束事件
+ *
+ * @ignore
  * @param {Element} $el - 目标dom元素
  * @param {function} handler - 事件处理器
  * @param {function} [useCapture=false] - 是否在捕获或冒泡阶段执行，false=冒泡(默认)，true=捕获

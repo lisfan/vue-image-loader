@@ -55,7 +55,7 @@ Vue.use(VueImageLoader,{
 // 最简单的调用，若图片不存在，则调用内置的占位图片
 <img :image-src="http://domain/src.png" v-image-loader.avatar />
 
-// 自定义占位图片，同时设置了图片容易的高宽，并使用了一个渐现动画效果(需要自定义动效样式)
+// 自定义占位图片，同时设置了图片容器的高宽，并使用了一个渐现动画效果(需要自定义动效样式)
 <img :placeholder='http://domain/ph.png' :image-src="http://domain/src.png" v-image-loader:500x300="'mj-ani-fadeIn'" />
 
 // 实际图片已下载完毕，但是我想让每次路由切换重新回到这个页面的使用，这个图片加载都触发翻转动画效果(需要自定义动效样式)

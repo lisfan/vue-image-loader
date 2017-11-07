@@ -1,7 +1,8 @@
 /**
- * 图片加载器
- *
+ * @file 图片加载器
+ * @author lisfan <goolisfan@gmail.com>
  * @version 1.2.0
+ * @licence MIT
  */
 
 import validation from '@~lisfan/validation'
@@ -130,6 +131,7 @@ const _actions = {
   },
   /**
    * 图片请求失败事件
+   *
    * @param {element} $el - 目标dom元素
    * @param {element} $image - 虚拟图片元素
    * @param {Vue} vm - vue实例
@@ -162,14 +164,17 @@ const _actions = {
 }
 
 /**
- * 暴露install钩子，供vue注册
+ * 图片加载器注册函数
+ *
+ * @since 1.2.0
+ * @global
  * @param {Vue} Vue - Vue构造器类
  * @param {object} [options={}] - 配置选项
  * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
  * @param {number} [options.remRatio=100] - rem与px的比便关系，默认值为100，表示1rem=100px
  * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
  * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
- * @param {object} [options.placeholder=false] - 内置一些占位图片，key名会转换为修饰符
+ * @param {object} [options.placeholder={}] - 内置一些占位图片，key名会转换为修饰符
  */
 ImageLoader.install = function (Vue, {
   debug = false,
@@ -184,17 +189,24 @@ ImageLoader.install = function (Vue, {
   })
 
   /**
-   * image-loader 指令
+   * vue指令：image-loader
+   * 该指令会从元素节点属性上读取两个值：placeholder和image-src
+   * - placeholder 设置了图片加载失败时，所采用的占位图片(优先级高)。也可以通过使用modifiers进行快捷指定
+   * - image-src 设置了图片需要加载的图片
    *
-   * @param {number} [arg=false] - 参数
-   * @param {number} [value=false] - 值
-   * @param {number} [modifiers] - 修饰符
-   * @param {number} [modifiers.force=false] - 启用每次指令绑定或更新进行动效展示修饰符
+   * @function image-loader
+   * @since 1.2.0
+   * @param {string} [arg=false] - 参数图片宽度尺寸
+   * @param {string} [value=false] - 动效样式
+   * @param {object} [modifiers] - 修饰符对象，除了force值外，其他值都将当成占位符的快捷指定
+   * @param {boolean} [modifiers.force=false] - 是否启用每次指令绑定或更新，重新进行动效展示修饰符
    */
   Vue.directive(DIRECTIVE_NAMESPACE, {
     /**
-     * 初始绑定
-     * @param {Element} $el - 目标dom元素
+     * 初始化绑定
+     *
+     * @ignore
+     * @param {element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
@@ -258,7 +270,9 @@ ImageLoader.install = function (Vue, {
     },
     /**
      * 值进行了更新
-     * @param {Element} $el - 目标dom元素
+     *
+     * @ignore
+     * @param {element} $el - 目标dom元素
      * @param {object} binding - 指令对象
      * @param {VNode} vnode - vue节点对象
      */
