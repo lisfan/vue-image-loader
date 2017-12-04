@@ -1,12 +1,12 @@
 /**
  * @file 图片加载器
  * @author lisfan <goolisfan@gmail.com>
- * @version 1.2.0
+ * @version 1.3.0
  * @licence MIT
  */
 
+
 import validation from '@~lisfan/validation'
-import VueLogger from '@~lisfan/vue-logger'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
 let ImageLoader = {} // 插件对象
@@ -163,6 +163,20 @@ const _actions = {
   }
 }
 
+
+class ImageLoader {
+  static config
+  constructor() {
+
+  }
+
+  // 加载图片
+  load() {
+
+  }
+
+  // 重新加载图片
+}
 /**
  * 图片加载器注册函数
  *
