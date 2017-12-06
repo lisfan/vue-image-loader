@@ -34,8 +34,9 @@
   },
   "homepage": "https://github.com/lisfan/vue-image-loader#readme",
   "dependencies": {
-    "@~lisfan/vue-logger": "^2.0.0",
-    "@~lisfan/validation": "^1.0.0"
+    "@~lisfan/event-queues": "file:../event-queues",
+    "@~lisfan/validation": "^1.0.0",
+    "@~lisfan/vue-logger": "^2.0.0"
   },
   "devDependencies": {
     "docdash": "~0.4.0",

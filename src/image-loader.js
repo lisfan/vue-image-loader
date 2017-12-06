@@ -4,305 +4,377 @@
  * @version 1.3.0
  * @licence MIT
  */
-
-
 import validation from '@~lisfan/validation'
-import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
-
-let ImageLoader = {} // 插件对象
-const DIRECTIVE_NAMESPACE = 'image-loader' // 指令名称
-const PLUGIN_TYPE = 'directive'
-
-// 透明图片base64
-const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
+import EventQueues from '@~lisfan/event-queues'
 
 // 私有方法
 const _actions = {
-  // 获取第一个内置的占位图片
-  getPlaceholderImage(binding, placeholders) {
-    let placeholderImage
-
-    Object.keys(binding.modifiers).some((key) => {
-      return (placeholderImage = placeholders[key])
-    })
-
-    return placeholderImage
-  },
+  BASE64_REG: /data:(.*);base64,/,
   /**
-   * 设置图片地址
-   * @param {element} $el - 目标dom元素
+   * 获取图片扩展名
+   * 1. 如果图片地址是base64格式
+   * 2. 兼容了又拍云的图片处理，如path/to/source.jpg!both/100x100这样的格式
    * @param {string} imgSrc - 图片地址
+   * @return {string}
    */
-  setImageSrc($el, imgSrc) {
-    if ($el.nodeName === 'IMG') {
-      $el.setAttribute('src', imgSrc)
+  getExtension(imgSrc) {
+    const matched = imgSrc.match(_actions.BASE64_REG)
+
+    let EXT_REG
+    // 如果本身是base64
+    if (matched) {
+      EXT_REG = /image\/(.*)/
+      imgSrc = matched[1]
     } else {
-      $el.style.backgroundImage = 'url("' + imgSrc + '")'
+      EXT_REG = /.*\.([a-zA-Z\d]+).*/
     }
+
+    return imgSrc.replace(EXT_REG, '$1').toLocaleLowerCase()
   },
   /**
-   * 请求图片资源
-   *
-   * @param {element} $el - 目标dom元素
-   * @param {string} imgSrc - 请求图片地址
-   * @param {boolean} animate - 全局配置，是否进行动效
-   * @param {Vue} vm - vue实例
-   * @param {VueLogger} vueLogger - logger日志
+   * 获取图片mime类型
+   * @param {string} ext - 后缀名
+   * @return {string} - 返回mime类型
    */
-  requestImage($el, imgSrc, animate, vm, vueLogger) {
-    // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
-    // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
-    $el.isRequestPHImage = false
-
-    if (imgSrc === $el.phImageSrc) {
-      $el.isRequestPHImage = true
+  getMimeType(ext) {
+    const MIME_TYPE = {
+      jpg: 'image/jpeg',
+      jepg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
     }
 
-    let $image = new Image()
-    $image.src = imgSrc
-    $el.currentImgSrc = imgSrc
-
-    // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
-    if ($image.complete && !$el.enableForceEffect) {
-      $el.imageComplete = true
-    } else {
-      $el.imageComplete = false
-    }
-
-    // 判断dom元素标签名，若为img标签元素，则设置透明图片占位，否则设置为该元素的背景
-    _actions.setImageSrc($el, PLACEHOLDER_IMAGE)
-
-    // 为dom元素绑定动画结束事件
-    if (animate && $el.animationClassName) {
-      // 若已绑定则不再重复绑定
-      const animationEndHandler = function () {
-        const enterEndClassNameList = $el.originClassNameList.slice()
-        enterEndClassNameList.push($el.animationClassName + '-enter-end')
-        $el.setAttribute('class', enterEndClassNameList.join(' ').trim())
-
-        // 动画结束后移除绑定事件
-        removeAnimationEnd($el, animationEndHandler)
-      }
-
-      // 为节点绑定动画结束事件
-      addAnimationEnd($el, animationEndHandler)
-    }
-
-    $image.addEventListener('load', _actions.successHandler($el, $image, animate, vm, vueLogger))
-
-    $image.addEventListener('error', _actions.failHandler($el, $image, vm, vueLogger))
+    return MIME_TYPE[ext]
   },
   /**
-   * 图片请求成功事件
-   * @param {element} $el - 目标dom元素
-   * @param {element} $image - 虚拟图片元素
-   * @param {boolean} animate - 全局配置，是否进行动效
-   * @param {Vue} vm - vue实例
-   * @param {VueLogger} vueLogger - logger日志
+   * 简易ajax
    */
-  successHandler($el, $image, animate, vm, vueLogger) {
-    return function () {
-      // 性能优化：图片延迟加载，不要在同一时间内同时加载
-      requestAnimationFrame(() => {
-        vueLogger.log(vm, 'image load successed:', $el.currentImgSrc)
+  ajax(url, method = 'get', type = 'json') {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open(method, url, true)
+      xhr.responseType = type
 
-        $image = null // 销毁
-
-        // 设置图片地址
-        _actions.setImageSrc($el, $el.currentImgSrc)
-
-        // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
-        if (!$el.imageComplete && animate && $el.animationClassName) {
-          vueLogger.log(vm, 'animation ing...')
-
-          const enterClassNameList = $el.originClassNameList.slice()
-          enterClassNameList.push($el.animationClassName + '-enter')
-          $el.setAttribute('class', enterClassNameList.join(' ').trim())
-
-          // 置于下一帧
-          requestAnimationFrame(() => {
-            const enterActiveClassNameList = $el.originClassNameList.slice()
-            enterActiveClassNameList.push($el.animationClassName + '-enter-active')
-            $el.setAttribute('class', enterActiveClassNameList.join(' ').trim())
-          })
+      xhr.onload = function () {
+        if (this.readyState !== 4 | this.status !== 200) {
+          return
         }
-      })
-    }
+
+        console.log(xhr.getResponseHeader('content-type'))
+
+        resolve(this)
+      }
+
+      xhr.onerror = function (err) {
+        reject(err)
+      }
+
+      xhr.send()
+    })
   },
   /**
-   * 图片请求失败事件
-   *
-   * @param {element} $el - 目标dom元素
-   * @param {element} $image - 虚拟图片元素
-   * @param {Vue} vm - vue实例
-   * @param {VueLogger} vueLogger - logger日志
+   * base64转blob
+   * @param dataurl
+   * @returns {*}
    */
-  failHandler($el, $image, vm, vueLogger) {
-    return function () {
-      vueLogger.log(vm, 'image load faild:', $el.currentImgSrc)
+  dataURLtoBlob(dataUrl) {
+    const arr = dataUrl.split(',')
 
-      // 如果是二次加载图片且又失败
-      // 则使用透明图片代替
-      if (!$el.isRequestPHImage) {
-        $el.currentImgSrc = $el.phImageSrc
-        $image.src = $el.currentImgSrc
-        $el.isRequestPHImage = true
-      } else {
-        $el.currentImgSrc = PLACEHOLDER_IMAGE
-        $image.src = $el.currentImgSrc
-        // $image = null // 销毁
-      }
-      //
-      // // 如果这张图片已下载过，且开启强制动效
-      // if ($image.complete && !$el.enableForceEffect) {
-      //   $el.imageComplete = true
-      // } else {
-      //   $el.imageComplete = false
-      // }
+    const blobStr = atob(arr[1])
+
+    let bLen = blobStr.length
+
+    const u8arr = new Uint8Array(bLen)
+
+    while (bLen--) {
+      u8arr[bLen] = blobStr.charCodeAt(bLen)
     }
+
+    const mime = arr[0].match(/:(.*?);/)[1]
+
+    return new Blob([u8arr], { type: mime })
   }
 }
 
-
-class ImageLoader {
-  static config
-  constructor() {
-
+class ImageLoader extends EventQueues {
+  /**
+   * 默认配置选项
+   * 为了在生产环境能开启调试模式
+   * 提供了从localStorage获取默认配置项的措施
+   *
+   * @since 1.3.0
+   * @memberOf ImageLoader
+   * @readonly
+   * @static
+   * @property {boolean} debug=false - 打印器调试模式是否开启
+   * @property {string} name='ImageLoader' - 打印器名称标记
+   */
+  static options = {
+    name: 'ImageLoader',
+    debug: true,
+    successHook: 'success', // 载入成功钩子
+    errorHook: 'error' // 载入失败钩子
   }
-
-  // 加载图片
-  load() {
-
-  }
-
-  // 重新加载图片
-}
-/**
- * 图片加载器注册函数
- *
- * @since 1.2.0
- * @global
- * @param {Vue} Vue - Vue构造器类
- * @param {object} [options={}] - 配置选项
- * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
- * @param {number} [options.remRatio=100] - rem与px的比便关系，默认值为100，表示1rem=100px
- * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
- * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
- * @param {object} [options.placeholder={}] - 内置一些占位图片，key名会转换为修饰符
- */
-ImageLoader.install = function (Vue, {
-  debug = false,
-  remRatio = 100,
-  animate = true,
-  force = false,
-  placeholders = {}
-} = {}) {
-  const vueLogger = new VueLogger({
-    name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
-    debug
-  })
 
   /**
-   * vue指令：image-loader
-   * 该指令会从元素节点属性上读取两个值：placeholder和image-src
-   * - placeholder 设置了图片加载失败时，所采用的占位图片(优先级高)。也可以通过使用modifiers进行快捷指定
-   * - image-src 设置了图片需要加载的图片
+   * 更新默认配置选项
    *
-   * @function image-loader
-   * @since 1.2.0
-   * @param {string} [arg=false] - 参数图片宽度尺寸
-   * @param {string} [value=false] - 动效样式
-   * @param {object} [modifiers] - 修饰符对象，除了force值外，其他值都将当成占位符的快捷指定
-   * @param {boolean} [modifiers.force=false] - 是否启用每次指令绑定或更新，重新进行动效展示修饰符
+   * @since 1.3.0
+   * @static
+   * @param {object} options - 配置参数
+   * @param {boolean} [options.debug] - 调试模式是否开启
+   * @return {ImageLoader}
    */
-  Vue.directive(DIRECTIVE_NAMESPACE, {
-    /**
-     * 初始化绑定
-     *
-     * @ignore
-     * @param {element} $el - 目标dom元素
-     * @param {object} binding - 指令对象
-     * @param {VNode} vnode - vue节点对象
-     */
-    bind($el, binding, vnode) {
-      vueLogger.log(vnode.context, 'emit bind hook!')
-
-      // 在目标节点上绑定该指令标识
-      $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
-
-      // 在dom实例上绑定一些初次绑定保存的数据
-      // 保存默认占位图片的值
-      // 从修饰符对象中找出第一个匹配中的占位图片
-      $el.phImageSrc = $el.getAttribute('placeholder') || _actions.getPlaceholderImage(binding, placeholders) || ''
-      $el.imageSrc = $el.getAttribute('image-src') || ''
-
-      // 保存原dom元素class类名
-      const originClassName = $el.getAttribute('class') || ''
-      $el.originClassNameList = originClassName.split(' ')
-
-      // 自定义动画类
-      $el.animationClassName = binding.value || ''
-
-      // 是否强制开启每次载入动效
-      $el.enableForceEffect = binding.modifiers.force || force
-
-      // 是否自定义了高宽值
-      let sizeList = []
-
-      if (binding.arg) {
-        sizeList = binding.arg.split('x')
-      }
-
-      // 只截取前两个的值
-      let [width, height] = sizeList.slice(0, 2)
-
-      height = height || width
-
-      // 设置目标元素的高宽
-      // [注]：他拉伸的是直接的元素高度，不不会自适应缩放
-      // 减少重绘，注意留空
-      if (width && height) {
-        const widthStyle = (width / remRatio ) + 'rem'
-        const heightStyle = (height / remRatio ) + 'rem'
-        $el.style = `width:${widthStyle}; height:${heightStyle}; ` + $el.style
-        vueLogger.log(vnode.context, 'width:', widthStyle)
-        vueLogger.log(vnode.context, 'height:', heightStyle)
-      }
-
-      vueLogger.log(vnode.context, 'force animation effect:', $el.enableForceEffect)
-      vueLogger.log(vnode.context, 'animationClass:', $el.animationClassName)
-      vueLogger.log(vnode.context, 'image src:', $el.imageSrc)
-      vueLogger.log(vnode.context, 'placeholder image src:', $el.phImageSrc)
-
-      if (validation.isEmpty($el.imageSrc)) {
-        vueLogger.log(vnode.context, 'image src no existed, request placeholder image source!')
-        _actions.requestImage($el, $el.phImageSrc, animate, vnode.context, vueLogger)
-      } else {
-        vueLogger.log(vnode.context, 'image src existed, request image source!')
-        _actions.requestImage($el, $el.imageSrc, animate, vnode.context, vueLogger)
-      }
-    },
-    /**
-     * 值进行了更新
-     *
-     * @ignore
-     * @param {element} $el - 目标dom元素
-     * @param {object} binding - 指令对象
-     * @param {VNode} vnode - vue节点对象
-     */
-    update($el, binding, vnode) {
-      vueLogger.log(vnode.context, 'emit update hook!')
-
-      const newImageSrc = $el.getAttribute('image-src') || ''
-      // 当图片地址有变化时，重新请求图片
-      if ($el.imageSrc !== newImageSrc) {
-        // 若强制启用了动效，则每次图片显示，都会执行动效
-        vueLogger.log(vnode.context, 'image src updated, request image source again!')
-        $el.imageSrc = newImageSrc
-        _actions.requestImage($el, newImageSrc, animate, vnode.context, vueLogger)
-      }
+  static config(options) {
+    // 以内置配置为优先
+    ImageLoader.options = {
+      ...ImageLoader.options,
+      ...options
     }
-  })
+
+    return ImageLoader
+  }
+
+  /**
+   * 构造函数
+   *
+   * @
+   * @param {object} [options] - 实例配置选项，若参数为`string`类型，则表示设定为`options.name`的值
+   * @param {string} [options.name] - 日志器命名空间
+   * @param {boolean} [options.debug] - 调试模式是否开启
+   */
+  constructor(options) {
+    super({
+      ...ImageLoader.options,
+      ...options
+    })
+  }
+
+  /**
+   * 获取实例配置的载入成功事件钩子
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $successHook() {
+    return this.$options.successHook
+  }
+
+  /**
+   * 获取image实例对应图片的地址
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $currentSrc() {
+    return this.$image.currentSrc
+  }
+
+  /**
+   * 获取image实例的设置宽度
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $width() {
+    return this.$image.width
+  }
+
+  /**
+   * 获取实例配置的载入失败事件钩子
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $errorHook() {
+    return this.$options.errorHook
+  }
+
+  /**
+   * 获取image实例对应图片的真实宽度
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $naturalWidth() {
+    return this.$image.naturalWidth
+  }
+
+  /**
+   * 获取image实例对应图片的真实高度
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $naturalHeight() {
+    return this.$image.naturalHeight
+  }
+
+  /**
+   * 获取image实例的设置高度
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $height() {
+    return this.$image.height
+  }
+
+  /**
+   * 获取当前文件扩展名
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $ext() {
+    return _actions.getExtension(this.$currentSrc)
+  }
+
+  /**
+   * 获取当前文件的mime类型
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $mime() {
+    return this.$blob.type
+  }
+
+  /**
+   * 获取当前文件的大小
+   *
+   * @since 1.3.0
+   * @getter
+   * @readonly
+   * @return {string}
+   */
+  get $size() {
+    return this.$blob.size
+  }
+
+  /**
+   * 下载图片
+   * 调用属性时，请确保图片已下载完毕
+   *
+   * @since 1.3.0
+   * @param {string} imgSrc - 图片地址
+   * @returns {Function} - 返回自定义颜色的打印方法
+   */
+  load(imgSrc, width, height) {
+    return new Promise((resolve, reject) => {
+      this.$image = new Image(width, height)
+
+      this.$image.crossOrigin = '*' // 跨域请求
+
+      this.$image.addEventListener('load', () => {
+        this._logger.log('image load successed!', this.$currentSrc)
+        this.emit(this.$successHook).then((result) => {
+          resolve(result)
+        }).catch(() => {
+          resolve()
+        })
+      })
+
+      this.$image.addEventListener('error', async () => {
+        this._logger.log('image load error!', this.$currentSrc)
+        this.emit(this.$errorHook).then((result) => {
+          reject(result)
+        }).catch(() => {
+          reject()
+        })
+      })
+
+      this.$image.src = imgSrc
+    })
+  }
+
+  /**
+   * 图片地址转换为base64格式
+   * 若未指定imgSrc则编码当前已载入的图片，若指定了imgSrc则下载图片并导出最终结果
+   * @param imgSrc
+   */
+  base64(imgSrc, format = 'image/jpeg') {
+    return new Promise((resolve, reject) => {
+      if (validation.isString(imgSrc)) {
+        this.load(imgSrc).then(() => {
+          resolve()
+        }).catch((err) => {
+          reject(err)
+        })
+      } else {
+        resolve()
+      }
+    }).then(() => {
+      let canvas = document.createElement('CANVAS')
+      canvas.width = this.$width
+      canvas.height = this.$height
+
+      const context = canvas.getContext('2d')
+      context.drawImage(this.$image, 0, 0)
+
+      const base64Image = canvas.toDataURL(_actions.getMimeType(_actions.getExtension(imgSrc)), format)
+
+      canvas = null
+
+      return base64Image
+    })
+  }
+
+  /**
+   * 以ajax方式获取图片
+   * @param imgSrc
+   * @returns {Promise}
+   */
+  fetch(imgSrc) {
+    // 如果已经是base64格式
+    return new Promise((resolve, reject) => {
+      const matched = imgSrc.match(_actions.BASE64_REG)
+
+      // 如果本身是base64
+      if (matched) {
+        this.$blob = _actions.dataURLtoBlob(imgSrc)
+
+        return resolve(imgSrc)
+      }
+
+      // 非base64格式
+      return _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
+        this.$blob = result.response
+
+        const fileReader = new FileReader()
+
+        fileReader.onload = (event) => {
+          resolve(event.target.result)
+        }
+
+        fileReader.onerror = (err) => {
+          reject(err)
+        }
+
+        fileReader.readAsDataURL(this.$blob)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  }
 }
 
 export default ImageLoader
