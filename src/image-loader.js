@@ -395,21 +395,38 @@ class ImageLoader extends EventQueues {
         })
       }
 
-      // 非base64格式
-      return _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
-        this.$blob = result.response
-
-        Promise.all([
-          this.load(imgSrc),
-          _actions.blobToDataURL(result.response)
-        ]).then((result) => {
-          resolve(result[1])
+      _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
+        // 执行成功事件
+        this.emit('load').then((emitResult) => {
+          return Promise.resolve(emitResult)
+        }).catch((err) => {
+          return Promise.resolve(err)
+        }).then(() => {
+          this.$blob = result.response
+          _actions.blobToDataURL(result.response).then((dataURL) => {
+            resolve(dataURL)
+          })
+        })
+      }).catch(() => {
+        // 执行失败事件
+        this.emit('error').then((errResult) => {
+          return Promise.reject(errResult)
+        }).catch((err) => {
+          return Promise.reject(err)
         }).catch((err) => {
           reject(err)
         })
-      }).catch((err) => {
-        reject(err)
       })
+      // // 非base64格式
+      // Promise.all([
+      //
+      //   this.load(imgSrc),
+      // ]).then((result) => {
+      //
+      //
+      // }).catch((err) => {
+      //   reject(err)
+      // })
     })
   }
 }
