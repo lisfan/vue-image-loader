@@ -62,17 +62,17 @@ const _actions = {
       xhr.open(method, url, true)
       xhr.responseType = type
 
-      xhr.onload = function () {
-        if (this.readyState !== 4 | this.status !== 200) {
+      xhr.addEventListener("load", () => {
+        if (xhr.readyState !== 4 | xhr.status !== 200) {
           return
         }
 
-        resolve(this)
-      }
+        resolve(xhr)
+      })
 
-      xhr.onerror = function (err) {
+      xhr.addEventListener("err", (err) => {
         reject(err)
-      }
+      })
 
       xhr.send()
     })
@@ -80,19 +80,19 @@ const _actions = {
   /**
    * blob转dataURL
    * @param {blob} blob - blob数据
-   * @returns {string}
+   * @returns {Promise}
    */
   blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader()
 
-      fileReader.onload = (event) => {
+      fileReader.addEventListener("load", (event) => {
         resolve(event.target.result)
-      }
+      })
 
-      fileReader.onerror = (err) => {
+      fileReader.addEventListener("error", (err) => {
         reject(err)
-      }
+      })
 
       fileReader.readAsDataURL(blob)
     })
@@ -118,6 +118,27 @@ const _actions = {
     const mime = arr[0].match(/:(.*?);/)[1]
 
     return new Blob([u8arr], { type: mime })
+  },
+  /**
+   * canvas 转 dataURL
+   * @param {ImageLoader} self - 当前实例
+   * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
+   * @returns {string}
+   */
+  canvasToDataURL(self, format) {
+    // 如果图片本身是base64
+    // 如果存在的是$image
+    // 否则进行转换
+    let canvas = document.createElement('CANVAS')
+    canvas.width = self.$naturalWidth
+    canvas.height = self.$naturalHeight
+
+    const context = canvas.getContext('2d')
+    context.drawImage(self.$image, 0, 0)
+
+    const mimeType = format ? _actions.getMimeType(format) : _actions.getMimeType(_actions.getExtension(self.$currentSrc))
+
+    return canvas.toDataURL(mimeType)
   }
 }
 
@@ -328,7 +349,7 @@ class ImageLoader extends EventQueues {
         })
       })
 
-      this.$image.addEventListener('error', async () => {
+      this.$image.addEventListener('error', () => {
         this._logger.log('image load error!', this.$currentSrc)
         this.emit('error').then((result) => {
           reject(result)
@@ -343,34 +364,36 @@ class ImageLoader extends EventQueues {
 
   /**
    * 图片地址转换为base64格式
+   * 调用该方法时，请确保$image值存在，或者base64的值存在
    * 若未指定imgSrc则编码当前已载入的图片，若指定了imgSrc则下载图片并导出最终结果
    *
-   * @param {string} [imgSrc] - 图片地址
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
    * @returns {Promise}
    */
-  base64(imgSrc, format) {
+  base64(format) {
     return new Promise((resolve, reject) => {
-      if (validation.isString(imgSrc)) {
-        this.load(imgSrc).then(() => {
-          resolve()
-        }).catch((err) => {
-          reject(err)
-        })
-      } else {
-        resolve()
+      // 如果ImageLoader#$image和ImageLoader#$dataURL都不存在，则抛出错误
+      if (!this.$blob && !this.$image) {
+        reject('image resource does not load! please use once (ImageLoader#load) or (ImageLoader#fetch) method.')
       }
-    }).then(() => {
-      let canvas = document.createElement('CANVAS')
-      canvas.width = this.$width
-      canvas.height = this.$height
 
-      const context = canvas.getContext('2d')
-      context.drawImage(this.$image, 0, 0)
+      // 假如优先存在$image则优先处理
+      if (this.$image) {
+        // 如果图片本身是base64
+        const matched = imgSrc.match(_actions.BASE64_REG)
 
-      const mimeType = format ? _actions.getMimeType(format) : _actions.getMimeType(_actions.getExtension(imgSrc))
+        // 如果本身是base64
+        if (matched) {
+          return resolve(this.$currentSrc)
+        }
 
-      return canvas.toDataURL(mimeType)
+        return resolve(_actions.canvasToDataURL(this, format))
+      }
+
+      // 之后再处理$blob进行处理
+      return _actions.blobToDataURL(this.$blob).then((dataURL) => {
+        resolve(dataURL)
+      })
     })
   }
 
@@ -403,9 +426,7 @@ class ImageLoader extends EventQueues {
           return Promise.resolve(err)
         }).then(() => {
           this.$blob = result.response
-          _actions.blobToDataURL(result.response).then((dataURL) => {
-            resolve(dataURL)
-          })
+          resolve()
         })
       }).catch(() => {
         // 执行失败事件

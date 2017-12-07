@@ -30,3 +30,8 @@
 
 
 fetch也同样可以获取其他属性值
+
+
+load和fetch方法均会触发事件队列，事件队列的执行结果作为resolve的值传入
+
+base64只返回转换后的dataURL
