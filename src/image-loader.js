@@ -150,14 +150,14 @@ const _actions = {
 
 /**
  * @external EventQueues
- * @see {@link lisfan.github.io/event-queues|EventQueues}
+ * @see {@link http://lisfan.github.io/event-queues|EventQueues}
  */
 
 /**
  * @classdesc
  * 图片下载类
  *
- * [注] 继承了EventQueues类，附加的实例方法和属性请至{@link lisfan.github.io/event-queues|EventQueues API}文档查看
+ * [注] 继承了EventQueues类，附加的实例方法和属性请至{@link http://lisfan.github.io/event-queues|EventQueues API}文档查看
  *
  * @class
  * @extends EventQueues
@@ -175,7 +175,7 @@ class ImageLoader extends EventQueues {
    */
   static options = {
     name: 'ImageLoader',
-    debug: true,
+    debug: false,
   }
 
   /**
