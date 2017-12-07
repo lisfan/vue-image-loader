@@ -8,17 +8,26 @@
 import validation from '@~lisfan/validation'
 import VueLogger from '@~lisfan/vue-logger'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
+import ImageLoader from './image-loader'
 
-let ImageLoader = {} // 插件对象
-const DIRECTIVE_NAMESPACE = 'image-loader' // 指令名称
+let VueImageLoader = {} // 插件对象
+const DIRECTIVE_NAMESPACE = 'vue-image-loader' // 指令名称
 const PLUGIN_TYPE = 'directive'
 
 // 透明图片base64
 const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
 
+const LOADING_IMAGE = 'data:image/jpeg;base64,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'
+
 // 私有方法
 const _actions = {
-  // 获取第一个内置的占位图片
+  /**
+   * 获取匹配到的占位图片
+   *
+   * @param {object} binding - 指令对象
+   * @param {object} placeholders - 占位图片枚举集合
+   * @returns {string}
+   */
   getPlaceholderImage(binding, placeholders) {
     let placeholderImage
 
@@ -29,8 +38,9 @@ const _actions = {
     return placeholderImage
   },
   /**
-   * 设置图片地址
-   * @param {element} $el - 目标dom元素
+   * 根据dom元素的不同设置图片地址
+   *
+   * @param {Element} $el - 目标dom元素
    * @param {string} imgSrc - 图片地址
    */
   setImageSrc($el, imgSrc) {
@@ -174,9 +184,9 @@ const _actions = {
  * @param {number} [options.remRatio=100] - rem与px的比便关系，默认值为100，表示1rem=100px
  * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
  * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
- * @param {object} [options.placeholder={}] - 内置一些占位图片，key名会转换为修饰符
+ * @param {object} [options.placeholders={}] - 内置一些占位图片，key名会转换为修饰符
  */
-ImageLoader.install = function (Vue, {
+VueImageLoader.install = function (Vue, {
   debug = false,
   remRatio = 100,
   animate = true,
@@ -220,9 +230,11 @@ ImageLoader.install = function (Vue, {
       // 保存默认占位图片的值
       // 从修饰符对象中找出第一个匹配中的占位图片
       $el.phImageSrc = $el.getAttribute('placeholder') || _actions.getPlaceholderImage(binding, placeholders) || ''
+
+      // 获取初始图片地址
       $el.imageSrc = $el.getAttribute('image-src') || ''
 
-      // 保存原dom元素class类名
+      // 暂存原dom元素class类名
       const originClassName = $el.getAttribute('class') || ''
       $el.originClassNameList = originClassName.split(' ')
 
@@ -242,10 +254,11 @@ ImageLoader.install = function (Vue, {
       // 只截取前两个的值
       let [width, height] = sizeList.slice(0, 2)
 
+      // 高不存在时则同样的宽值
       height = height || width
 
       // 设置目标元素的高宽
-      // [注]：他拉伸的是直接的元素高度，不不会自适应缩放
+      // [注]：他拉伸的是直接的元素高度，不会自适应缩放
       // 减少重绘，注意留空
       if (width && height) {
         const widthStyle = (width / remRatio ) + 'rem'
@@ -261,10 +274,12 @@ ImageLoader.install = function (Vue, {
       vueLogger.log(vnode.context, 'placeholder image src:', $el.phImageSrc)
 
       if (validation.isEmpty($el.imageSrc)) {
-        vueLogger.log(vnode.context, 'image src no existed, request placeholder image source!')
+        // 如果地址为空，请求空白图片
+        vueLogger.log(vnode.context, 'image src no existed, request placeholder image resource!')
         _actions.requestImage($el, $el.phImageSrc, animate, vnode.context, vueLogger)
       } else {
-        vueLogger.log(vnode.context, 'image src existed, request image source!')
+        // 已存在地址时，发起请求
+        vueLogger.log(vnode.context, 'image src existed, request image resource!')
         _actions.requestImage($el, $el.imageSrc, animate, vnode.context, vueLogger)
       }
     },
@@ -280,15 +295,19 @@ ImageLoader.install = function (Vue, {
       vueLogger.log(vnode.context, 'emit update hook!')
 
       const newImageSrc = $el.getAttribute('image-src') || ''
+
       // 当图片地址有变化时，重新请求图片
       if ($el.imageSrc !== newImageSrc) {
         // 若强制启用了动效，则每次图片显示，都会执行动效
-        vueLogger.log(vnode.context, 'image src updated, request image source again!')
+        vueLogger.log(vnode.context, 'image src updated, request image resource!')
+
+        // 更新新图片地址
         $el.imageSrc = newImageSrc
+
         _actions.requestImage($el, newImageSrc, animate, vnode.context, vueLogger)
       }
     }
   })
 }
 
-export default ImageLoader
+export default VueImageLoader
