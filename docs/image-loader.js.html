@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
 </nav>
 
 <div id="main">
@@ -43,13 +43,17 @@
  * @version 1.3.0
  * @licence MIT
  */
-import validation from '@~lisfan/validation'
 import EventQueues from '@~lisfan/event-queues'
+
+// base64格式匹配正则表达式
+const BASE64_REG = /data:(.*);base64,/
 
 // 私有方法
 const _actions = {
-  // base64格式匹配正则表达式
-  BASE64_REG: /data:(.*);base64,/,
+  // 判断请求的图片地址与已请求过的地址是否是一致的
+  isSameResource(self, imgSrc) {
+    return imgSrc === self.$currentSrc
+  },
   /**
    * 获取图片扩展名
    * 兼容如下几种图片格式
@@ -60,7 +64,7 @@ const _actions = {
    * @return {string}
    */
   getExtension(imgSrc) {
-    const matched = imgSrc.match(_actions.BASE64_REG)
+    const matched = imgSrc.match(BASE64_REG)
 
     let EXT_REG
     // 如果本身是base64
@@ -101,45 +105,46 @@ const _actions = {
       xhr.open(method, url, true)
       xhr.responseType = type
 
-      xhr.onload = function () {
-        if (this.readyState !== 4 | this.status !== 200) {
-          return
+      xhr.addEventListener('load', () => {
+        if (xhr.readyState !== 4 | xhr.status !== 200) {
+          return reject(xhr)
         }
 
-        resolve(this)
-      }
+        resolve(xhr)
+      })
 
-      xhr.onerror = function (err) {
+      xhr.addEventListener('error', (err) => {
+        console.log('error')
         reject(err)
-      }
+      })
 
       xhr.send()
     })
   },
   /**
    * blob转dataURL
-   * @param {blob} blob - blob数据
-   * @returns {string}
+   * @param {Blob} blob - blob数据
+   * @returns {Promise}
    */
   blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader()
 
-      fileReader.onload = (event) => {
+      fileReader.addEventListener('load', (event) => {
         resolve(event.target.result)
-      }
+      })
 
-      fileReader.onerror = (err) => {
+      fileReader.addEventListener('error', (err) => {
         reject(err)
-      }
+      })
 
-      fileReader.readAsDataURL($blob)
+      fileReader.readAsDataURL(blob)
     })
   },
   /**
    * dataURL转blob
    * @param {string} dataURL - dataURL数据
-   * @returns {blob}
+   * @returns {Blob}
    */
   dataURLToBlob(dataURL) {
     const arr = dataURL.split(',')
@@ -157,19 +162,41 @@ const _actions = {
     const mime = arr[0].match(/:(.*?);/)[1]
 
     return new Blob([u8arr], { type: mime })
+  },
+  /**
+   * canvas 转 dataURL
+   * @param {ImageLoader} self - 当前实例
+   * @param {HTMLImageElement} image - image实例
+   * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
+   * @returns {string}
+   */
+  canvasToDataURL(self, image, format) {
+    // 如果图片本身是base64
+    // 如果存在的是$image
+    // 否则进行转换
+    let canvas = document.createElement('CANVAS')
+    canvas.width = self.$naturalWidth
+    canvas.height = self.$naturalHeight
+
+    const context = canvas.getContext('2d')
+    context.drawImage(image, 0, 0)
+
+    const mimeType = format ? _actions.getMimeType(format) : _actions.getMimeType(self.$ext)
+
+    return canvas.toDataURL(mimeType)
   }
 }
 
 /**
  * @external EventQueues
- * @see {@link lisfan.github.io/event-queues|EventQueues}
+ * @see {@link http://lisfan.github.io/event-queues|EventQueues}
  */
 
 /**
  * @classdesc
  * 图片下载类
  *
- * [注] 继承了EventQueues类，附加的实例方法和属性请至{@link lisfan.github.io/event-queues|EventQueues API}文档查看
+ * [注] 继承了EventQueues类，附加的实例方法和属性请至{@link http://lisfan.github.io/event-queues|EventQueues API}文档查看
  *
  * @class
  * @extends EventQueues
@@ -187,7 +214,7 @@ class ImageLoader extends EventQueues {
    */
   static options = {
     name: 'ImageLoader',
-    debug: true,
+    debug: false,
   }
 
   /**
@@ -330,7 +357,7 @@ class ImageLoader extends EventQueues {
   }
 
   /**
-   * 获取当前文件的大小
+   * 获取当前文件的大小，单位：字节
    * 仅在调用{@link ImageLoader#fetch}方法时有效
    *
    * @since 1.3.0
@@ -346,111 +373,150 @@ class ImageLoader extends EventQueues {
    * 载入图片
    *
    * @since 1.3.0
-   * @param {string} imgSrc - 图片地址
-   * @param {number} width - 图片显示的宽
-   * @param {number} height - 图片显示的高
+   * @param {string} [imgSrc=''] - 图片地址
+   * @param {number} [width] - 图片显示的宽
+   * @param {number} [height] - 图片显示的高
    * @returns {Promise}
    */
-  load(imgSrc, width, height) {
+  load(imgSrc = '', width, height) {
     return new Promise((resolve, reject) => {
-      this.$image = new Image(width, height)
+      try {
+        if (!_actions.isSameResource(self, imgSrc)) {
+          this.$blob = null
+        }
 
-      // 启用跨域请求
-      this.$image.crossOrigin = '*'
+        this.$image = new Image(width, height)
 
-      this.$image.addEventListener('load', () => {
-        this._logger.log('image load successed!', this.$currentSrc)
-        this.emit('load').then((result) => {
-          resolve(result)
-        }).catch(() => {
-          resolve()
+        // 启用跨域请求
+        this.$image.crossOrigin = '*'
+
+        this.$image.addEventListener('load', () => {
+          this._logger.log('image load successed!')
+          this.emit('load').then((result) => {
+            resolve(result)
+          }).catch((err) => {
+            reject(err)
+          })
         })
-      })
 
-      this.$image.addEventListener('error', async () => {
-        this._logger.log('image load error!', this.$currentSrc)
-        this.emit('error').then((result) => {
-          reject(result)
-        }).catch(() => {
-          reject()
+        this.$image.addEventListener('error', () => {
+          this._logger.log('image load error!')
+          this.emit('error').then((result) => {
+            reject(result)
+          }).catch((err) => {
+            reject(err)
+          })
         })
-      })
 
-      this.$image.src = imgSrc
-    })
-  }
-
-  /**
-   * 图片地址转换为base64格式
-   * 若未指定imgSrc则编码当前已载入的图片，若指定了imgSrc则下载图片并导出最终结果
-   *
-   * @param {string} [imgSrc] - 图片地址
-   * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
-   * @returns {Promise}
-   */
-  base64(imgSrc, format) {
-    return new Promise((resolve, reject) => {
-      if (validation.isString(imgSrc)) {
-        this.load(imgSrc).then(() => {
-          resolve()
-        }).catch((err) => {
-          reject(err)
-        })
-      } else {
-        resolve()
+        this.$image.src = imgSrc
+      } catch (err) {
+        reject(err)
       }
-    }).then(() => {
-      let canvas = document.createElement('CANVAS')
-      canvas.width = this.$width
-      canvas.height = this.$height
-
-      const context = canvas.getContext('2d')
-      context.drawImage(this.$image, 0, 0)
-
-      const mimeType = format ? _actions.getMimeType(format) : _actions.getMimeType(_actions.getExtension(imgSrc))
-
-      return canvas.toDataURL(mimeType)
     })
   }
 
   /**
    * 以ajax方式获取图片资源，该方式获取的资源可以统计资源的容量大小
    * 此时，可以取实例上的{@link ImageLoader#$mime}和{@link ImageLoader#$size}两个实例属性
-   * [注] 若图片地址是base64格式，则返回的则直接的是base64的容量大小（并不是原图片的容量大小）
+   * [注] 若图片地址是dataURL格式，则直接返回dataURL，且{@link ImageLoader#$size}对应的是dataURL的容量大小（并不是原图片的容量大小）
    *
-   * @param {string} [imgSrc] - 图片地址
-   * @returns {Promise&lt;string>}
+   * @param {string} [imgSrc=''] - 图片地址
+   * @returns {Promise}
    */
-  fetch(imgSrc) {
+  fetch(imgSrc = '') {
     // 如果已经是base64格式
     return new Promise((resolve, reject) => {
-      const matched = imgSrc.match(_actions.BASE64_REG)
+      try {
+        if (!_actions.isSameResource(this, imgSrc)) {
+          this.$image = null
+        }
 
-      // 如果本身是base64
-      if (matched) {
-        this.$blob = _actions.dataURLToBlob(imgSrc)
+        const matched = imgSrc.match(BASE64_REG)
 
-        return resolve(imgSrc)
-      }
+        // 如果本身是base64
+        if (matched) {
+          this.$blob = _actions.dataURLToBlob(imgSrc)
+          return this.load(imgSrc).then((result) => {
+            resolve(result)
+          }).catch((err) => {
+            reject(err)
+          })
+        }
 
-      // 非base64格式
-      return _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
-        this.$blob = result.response
+        return _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
+          this.$blob = result.response
 
-        return _actions.blobToDataURL(result.response).then((base64) => {
-          resolve(base64)
-        }).catch((err) => {
-          reject(err)
+          this.emit('load').then((result) => {
+            resolve(result)
+          }).catch((err) => {
+            reject(err)
+          })
+        }).catch(() => {
+          this.emit('error').then((result) => {
+            reject(result)
+          }).catch((err) => {
+            reject(err)
+          })
         })
-      }).catch((err) => {
+      } catch (err) {
         reject(err)
-      })
+      }
+    })
+  }
+
+  /**
+   * 输出base64格式
+   * 调用该方法时，请确保$image值存在，或者base64的值存在
+   *
+   * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
+   * @returns {Promise}
+   */
+  base64(format) {
+    return new Promise((resolve, reject) => {
+      try {
+        // 如果ImageLoader#$image和ImageLoader#$dataURL都不存在，则抛出错误
+        if (!this.$blob &amp;&amp; !this.$image) {
+          reject('image resource does not load! please use once (ImageLoader#load) or (ImageLoader#fetch) method.')
+        }
+
+        // 假如优先存在$image则优先处理
+        if (this.$image) {
+          // 如果图片本身是base64
+          const matched = this.$currentSrc.match(BASE64_REG)
+
+          // 如果本身是base64
+          if (matched) {
+            return resolve(this.$currentSrc)
+          }
+
+          return resolve(_actions.canvasToDataURL(this, this.$image, format))
+        }
+
+        // 之后再处理$blob进行处理
+        _actions.blobToDataURL(this.$blob).then((dataURL) => {
+          // 加载图片，转换url
+          // 若format与当前后缀格式不匹配，则进行格式转换
+          const mime = _actions.getMimeType(format)
+
+          // 如果相等
+          if (!mime || this.$mime === mime) {
+            return resolve(dataURL)
+          }
+
+          const image = new Image()
+          image.src = dataURL
+          image.addEventListener('load', () => {
+            return resolve(_actions.canvasToDataURL(this, image, format))
+          })
+        })
+      } catch (err) {
+        reject(err)
+      }
     })
   }
 }
 
-export default ImageLoader
-</code></pre>
+export default ImageLoader</code></pre>
         </article>
     </section>
 
@@ -462,7 +528,7 @@ export default ImageLoader
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Dec 06 2017 17:23:42 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Dec 07 2017 16:25:23 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
