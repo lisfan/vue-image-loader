@@ -4,13 +4,17 @@
  * @version 1.3.0
  * @licence MIT
  */
-import validation from '@~lisfan/validation'
 import EventQueues from '@~lisfan/event-queues'
+
+// base64格式匹配正则表达式
+const BASE64_REG = /data:(.*);base64,/
 
 // 私有方法
 const _actions = {
-  // base64格式匹配正则表达式
-  BASE64_REG: /data:(.*);base64,/,
+  // 判断请求的图片地址与已请求过的地址是否是一致的
+  isSameResource(self, imgSrc) {
+    return imgSrc === self.$currentSrc
+  },
   /**
    * 获取图片扩展名
    * 兼容如下几种图片格式
@@ -21,7 +25,7 @@ const _actions = {
    * @return {string}
    */
   getExtension(imgSrc) {
-    const matched = imgSrc.match(_actions.BASE64_REG)
+    const matched = imgSrc.match(BASE64_REG)
 
     let EXT_REG
     // 如果本身是base64
@@ -62,15 +66,16 @@ const _actions = {
       xhr.open(method, url, true)
       xhr.responseType = type
 
-      xhr.addEventListener("load", () => {
+      xhr.addEventListener('load', () => {
         if (xhr.readyState !== 4 | xhr.status !== 200) {
-          return
+          return reject(xhr)
         }
 
         resolve(xhr)
       })
 
-      xhr.addEventListener("err", (err) => {
+      xhr.addEventListener('error', (err) => {
+        console.log('error')
         reject(err)
       })
 
@@ -79,18 +84,18 @@ const _actions = {
   },
   /**
    * blob转dataURL
-   * @param {blob} blob - blob数据
+   * @param {Blob} blob - blob数据
    * @returns {Promise}
    */
   blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader()
 
-      fileReader.addEventListener("load", (event) => {
+      fileReader.addEventListener('load', (event) => {
         resolve(event.target.result)
       })
 
-      fileReader.addEventListener("error", (err) => {
+      fileReader.addEventListener('error', (err) => {
         reject(err)
       })
 
@@ -100,7 +105,7 @@ const _actions = {
   /**
    * dataURL转blob
    * @param {string} dataURL - dataURL数据
-   * @returns {blob}
+   * @returns {Blob}
    */
   dataURLToBlob(dataURL) {
     const arr = dataURL.split(',')
@@ -122,10 +127,11 @@ const _actions = {
   /**
    * canvas 转 dataURL
    * @param {ImageLoader} self - 当前实例
+   * @param {HTMLImageElement} image - image实例
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
    * @returns {string}
    */
-  canvasToDataURL(self, format) {
+  canvasToDataURL(self, image, format) {
     // 如果图片本身是base64
     // 如果存在的是$image
     // 否则进行转换
@@ -134,9 +140,9 @@ const _actions = {
     canvas.height = self.$naturalHeight
 
     const context = canvas.getContext('2d')
-    context.drawImage(self.$image, 0, 0)
+    context.drawImage(image, 0, 0)
 
-    const mimeType = format ? _actions.getMimeType(format) : _actions.getMimeType(_actions.getExtension(self.$currentSrc))
+    const mimeType = format ? _actions.getMimeType(format) : _actions.getMimeType(self.$ext)
 
     return canvas.toDataURL(mimeType)
   }
@@ -328,72 +334,45 @@ class ImageLoader extends EventQueues {
    * 载入图片
    *
    * @since 1.3.0
-   * @param {string} imgSrc - 图片地址
-   * @param {number} width - 图片显示的宽
-   * @param {number} height - 图片显示的高
+   * @param {string} [imgSrc=''] - 图片地址
+   * @param {number} [width] - 图片显示的宽
+   * @param {number} [height] - 图片显示的高
    * @returns {Promise}
    */
-  load(imgSrc, width, height) {
+  load(imgSrc = '', width, height) {
     return new Promise((resolve, reject) => {
-      this.$image = new Image(width, height)
-
-      // 启用跨域请求
-      this.$image.crossOrigin = '*'
-
-      this.$image.addEventListener('load', () => {
-        this._logger.log('image load successed!', this.$currentSrc)
-        this.emit('load').then((result) => {
-          resolve(result)
-        }).catch(() => {
-          resolve()
-        })
-      })
-
-      this.$image.addEventListener('error', () => {
-        this._logger.log('image load error!', this.$currentSrc)
-        this.emit('error').then((result) => {
-          reject(result)
-        }).catch(() => {
-          reject()
-        })
-      })
-
-      this.$image.src = imgSrc
-    })
-  }
-
-  /**
-   * 图片地址转换为base64格式
-   * 调用该方法时，请确保$image值存在，或者base64的值存在
-   * 若未指定imgSrc则编码当前已载入的图片，若指定了imgSrc则下载图片并导出最终结果
-   *
-   * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
-   * @returns {Promise}
-   */
-  base64(format) {
-    return new Promise((resolve, reject) => {
-      // 如果ImageLoader#$image和ImageLoader#$dataURL都不存在，则抛出错误
-      if (!this.$blob && !this.$image) {
-        reject('image resource does not load! please use once (ImageLoader#load) or (ImageLoader#fetch) method.')
-      }
-
-      // 假如优先存在$image则优先处理
-      if (this.$image) {
-        // 如果图片本身是base64
-        const matched = imgSrc.match(_actions.BASE64_REG)
-
-        // 如果本身是base64
-        if (matched) {
-          return resolve(this.$currentSrc)
+      try {
+        if (!_actions.isSameResource(self, imgSrc)) {
+          this.$blob = null
         }
 
-        return resolve(_actions.canvasToDataURL(this, format))
-      }
+        this.$image = new Image(width, height)
 
-      // 之后再处理$blob进行处理
-      return _actions.blobToDataURL(this.$blob).then((dataURL) => {
-        resolve(dataURL)
-      })
+        // 启用跨域请求
+        this.$image.crossOrigin = '*'
+
+        this.$image.addEventListener('load', () => {
+          this._logger.log('image load successed!')
+          this.emit('load').then((result) => {
+            resolve(result)
+          }).catch((err) => {
+            reject(err)
+          })
+        })
+
+        this.$image.addEventListener('error', () => {
+          this._logger.log('image load error!')
+          this.emit('error').then((result) => {
+            reject(result)
+          }).catch((err) => {
+            reject(err)
+          })
+        })
+
+        this.$image.src = imgSrc
+      } catch (err) {
+        reject(err)
+      }
     })
   }
 
@@ -402,52 +381,98 @@ class ImageLoader extends EventQueues {
    * 此时，可以取实例上的{@link ImageLoader#$mime}和{@link ImageLoader#$size}两个实例属性
    * [注] 若图片地址是dataURL格式，则直接返回dataURL，且{@link ImageLoader#$size}对应的是dataURL的容量大小（并不是原图片的容量大小）
    *
-   * @param {string} [imgSrc] - 图片地址
+   * @param {string} [imgSrc=''] - 图片地址
    * @returns {Promise}
    */
-  fetch(imgSrc) {
+  fetch(imgSrc = '') {
     // 如果已经是base64格式
     return new Promise((resolve, reject) => {
-      const matched = imgSrc.match(_actions.BASE64_REG)
+      try {
+        if (!_actions.isSameResource(this, imgSrc)) {
+          this.$image = null
+        }
 
-      // 如果本身是base64
-      if (matched) {
-        this.$blob = _actions.dataURLToBlob(imgSrc)
-        return this.load(imgSrc).then(() => {
-          return resolve(imgSrc)
-        })
-      }
+        const matched = imgSrc.match(BASE64_REG)
 
-      _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
-        // 执行成功事件
-        this.emit('load').then((emitResult) => {
-          return Promise.resolve(emitResult)
-        }).catch((err) => {
-          return Promise.resolve(err)
-        }).then(() => {
+        // 如果本身是base64
+        if (matched) {
+          this.$blob = _actions.dataURLToBlob(imgSrc)
+          return this.load(imgSrc).then((result) => {
+            resolve(result)
+          }).catch((err) => {
+            reject(err)
+          })
+        }
+
+        return _actions.ajax(imgSrc, 'get', 'blob').then((result) => {
           this.$blob = result.response
-          resolve()
+
+          this.emit('load').then((result) => {
+            resolve(result)
+          }).catch((err) => {
+            reject(err)
+          })
+        }).catch(() => {
+          this.emit('error').then((result) => {
+            reject(result)
+          }).catch((err) => {
+            reject(err)
+          })
         })
-      }).catch(() => {
-        // 执行失败事件
-        this.emit('error').then((errResult) => {
-          return Promise.reject(errResult)
-        }).catch((err) => {
-          return Promise.reject(err)
-        }).catch((err) => {
-          reject(err)
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
+
+  /**
+   * 输出base64格式
+   * 调用该方法时，请确保$image值存在，或者base64的值存在
+   *
+   * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
+   * @returns {Promise}
+   */
+  base64(format) {
+    return new Promise((resolve, reject) => {
+      try {
+        // 如果ImageLoader#$image和ImageLoader#$dataURL都不存在，则抛出错误
+        if (!this.$blob && !this.$image) {
+          reject('image resource does not load! please use once (ImageLoader#load) or (ImageLoader#fetch) method.')
+        }
+
+        // 假如优先存在$image则优先处理
+        if (this.$image) {
+          // 如果图片本身是base64
+          const matched = this.$currentSrc.match(BASE64_REG)
+
+          // 如果本身是base64
+          if (matched) {
+            return resolve(this.$currentSrc)
+          }
+
+          return resolve(_actions.canvasToDataURL(this, this.$image, format))
+        }
+
+        // 之后再处理$blob进行处理
+        _actions.blobToDataURL(this.$blob).then((dataURL) => {
+          // 加载图片，转换url
+          // 若format与当前后缀格式不匹配，则进行格式转换
+          const mime = _actions.getMimeType(format)
+
+          // 如果相等
+          if (!mime || this.$mime === mime) {
+            return resolve(dataURL)
+          }
+
+          const image = new Image()
+          image.src = dataURL
+          image.addEventListener('load', () => {
+            return resolve(_actions.canvasToDataURL(this, image, format))
+          })
         })
-      })
-      // // 非base64格式
-      // Promise.all([
-      //
-      //   this.load(imgSrc),
-      // ]).then((result) => {
-      //
-      //
-      // }).catch((err) => {
-      //   reject(err)
-      // })
+      } catch (err) {
+        reject(err)
+      }
     })
   }
 }
