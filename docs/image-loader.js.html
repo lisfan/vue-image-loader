@@ -124,7 +124,7 @@ const _actions = {
   /**
    * blob转dataURL
    * @param {Blob} blob - blob数据
-   * @returns {Promise}
+   * @return {Promise}
    */
   blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
@@ -144,7 +144,7 @@ const _actions = {
   /**
    * dataURL转blob
    * @param {string} dataURL - dataURL数据
-   * @returns {Blob}
+   * @return {Blob}
    */
   dataURLToBlob(dataURL) {
     const arr = dataURL.split(',')
@@ -168,7 +168,7 @@ const _actions = {
    * @param {ImageLoader} self - 当前实例
    * @param {HTMLImageElement} image - image实例
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
-   * @returns {string}
+   * @return {string}
    */
   canvasToDataURL(self, image, format) {
     // 如果图片本身是base64
@@ -376,7 +376,7 @@ class ImageLoader extends EventQueues {
    * @param {string} [imgSrc=''] - 图片地址
    * @param {number} [width] - 图片显示的宽
    * @param {number} [height] - 图片显示的高
-   * @returns {Promise}
+   * @return {Promise}
    */
   load(imgSrc = '', width, height) {
     return new Promise((resolve, reject) => {
@@ -421,7 +421,7 @@ class ImageLoader extends EventQueues {
    * [注] 若图片地址是dataURL格式，则直接返回dataURL，且{@link ImageLoader#$size}对应的是dataURL的容量大小（并不是原图片的容量大小）
    *
    * @param {string} [imgSrc=''] - 图片地址
-   * @returns {Promise}
+   * @return {Promise}
    */
   fetch(imgSrc = '') {
     // 如果已经是base64格式
@@ -469,7 +469,7 @@ class ImageLoader extends EventQueues {
    * 调用该方法时，请确保$image值存在，或者base64的值存在
    *
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
-   * @returns {Promise}
+   * @return {Promise}
    */
   base64(format) {
     return new Promise((resolve, reject) => {
