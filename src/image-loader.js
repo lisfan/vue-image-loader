@@ -22,7 +22,7 @@ const _actions = {
    * - 纯固定扩展结尾
    * - 兼容类似又拍云的图片处理APi，如`path/to/source.jpg!both/100x100`这样的格式
    * @param {string} imgSrc - 图片地址
-   * @return {string}
+   * @returns {string}
    */
   getExtension(imgSrc) {
     const matched = imgSrc.match(BASE64_REG)
@@ -41,7 +41,7 @@ const _actions = {
   /**
    * 根据图片的后缀获取图片的mime类型
    * @param {string} ext - 后缀名
-   * @return {string} - 返回mime类型
+   * @returns {string} - 返回mime类型
    */
   getMimeType(ext) {
     const MIME_TYPE = {
@@ -58,7 +58,7 @@ const _actions = {
    * @param {string} url - 请求链接
    * @param {string} [method='get'] - 请求方法
    * @param {string} [type='json'] - 响应结果类型
-   * @return {Promise}
+   * @returns {Promise}
    */
   ajax(url, method = 'get', type = 'json') {
     return new Promise((resolve, reject) => {
@@ -85,7 +85,7 @@ const _actions = {
   /**
    * blob转dataURL
    * @param {Blob} blob - blob数据
-   * @return {Promise}
+   * @returns {Promise}
    */
   blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
@@ -105,7 +105,7 @@ const _actions = {
   /**
    * dataURL转blob
    * @param {string} dataURL - dataURL数据
-   * @return {Blob}
+   * @returns {Blob}
    */
   dataURLToBlob(dataURL) {
     const arr = dataURL.split(',')
@@ -129,7 +129,7 @@ const _actions = {
    * @param {ImageLoader} self - 当前实例
    * @param {HTMLImageElement} image - image实例
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
-   * @return {string}
+   * @returns {string}
    */
   canvasToDataURL(self, image, format) {
     // 如果图片本身是base64
@@ -186,7 +186,7 @@ class ImageLoader extends EventQueues {
    * @param {object} options - 配置参数
    * @param {boolean} [options.debug=false] - 调试模式是否开启
    * @param {string} [options.name='ImageLoader'] - 打印器名称标记
-   * @return {ImageLoader}
+   * @returns {ImageLoader}
    */
   static config(options) {
     // 以内置配置为优先
@@ -233,7 +233,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $currentSrc() {
     return this.$image && this.$image.currentSrc
@@ -246,7 +246,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $width() {
     return this.$image && this.$image.width
@@ -259,7 +259,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $naturalWidth() {
     return this.$image && this.$image.naturalWidth
@@ -272,7 +272,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $height() {
     return this.$image && this.$image.height
@@ -285,7 +285,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $naturalHeight() {
     return this.$image && this.$image.naturalHeight
@@ -298,7 +298,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $ext() {
     return this.$image && _actions.getExtension(this.$currentSrc)
@@ -311,7 +311,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $mime() {
     return this.$blob && this.$blob.type
@@ -324,7 +324,7 @@ class ImageLoader extends EventQueues {
    * @since 1.3.0
    * @getter
    * @readonly
-   * @return {string}
+   * @returns {string}
    */
   get $size() {
     return this.$blob && this.$blob.size
@@ -337,7 +337,7 @@ class ImageLoader extends EventQueues {
    * @param {string} [imgSrc=''] - 图片地址
    * @param {number} [width] - 图片显示的宽
    * @param {number} [height] - 图片显示的高
-   * @return {Promise}
+   * @returns {Promise}
    */
   load(imgSrc = '', width, height) {
     return new Promise((resolve, reject) => {
@@ -382,7 +382,7 @@ class ImageLoader extends EventQueues {
    * [注] 若图片地址是dataURL格式，则直接返回dataURL，且{@link ImageLoader#$size}对应的是dataURL的容量大小（并不是原图片的容量大小）
    *
    * @param {string} [imgSrc=''] - 图片地址
-   * @return {Promise}
+   * @returns {Promise}
    */
   fetch(imgSrc = '') {
     // 如果已经是base64格式
@@ -430,7 +430,7 @@ class ImageLoader extends EventQueues {
    * 调用该方法时，请确保$image值存在，或者base64的值存在
    *
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
-   * @return {Promise}
+   * @returns {Promise}
    */
   base64(format) {
     return new Promise((resolve, reject) => {

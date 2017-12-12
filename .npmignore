@@ -11,7 +11,7 @@ server.config.js
 
 # npm
 node_modules/
-npm-debug.log
+npm-debug.log*
 package-lock*
 
 # publish

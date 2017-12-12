@@ -26,7 +26,7 @@ const _actions = {
    *
    * @param {object} binding - 指令对象
    * @param {object} placeholders - 占位图片枚举集合
-   * @return {string}
+   * @returns {string}
    */
   getPlaceholderImage(binding, placeholders) {
     let placeholderImage
