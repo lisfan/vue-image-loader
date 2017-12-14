@@ -1,1 +1,1 @@
-export { default } from './image-loader'
+export { default } from './install'
