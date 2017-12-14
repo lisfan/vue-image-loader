@@ -1,7 +1,7 @@
 /**
  * @file 图片加载器
  * @author lisfan <goolisfan@gmail.com>
- * @version 1.3.0
+ * @version 1.0.0
  * @licence MIT
  */
 import EventQueues from '@~lisfan/event-queues'
@@ -166,7 +166,7 @@ class ImageLoader extends EventQueues {
   /**
    * 默认配置选项
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @memberOf ImageLoader
    * @readonly
    * @static
@@ -181,7 +181,7 @@ class ImageLoader extends EventQueues {
   /**
    * 更新默认配置选项
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @static
    * @param {object} options - 配置参数
    * @param {boolean} [options.debug=false] - 调试模式是否开启
@@ -215,14 +215,14 @@ class ImageLoader extends EventQueues {
   /**
    * load方法执行时绑定的image对象
    *
-   * @since 1.3.0
+   * @since 1.0.0
    */
   $image = null
 
   /**
    * fetch方法执行时绑定的blob对象
    *
-   * @since 1.3.0
+   * @since 1.0.0
    */
   $blob = null
 
@@ -230,7 +230,7 @@ class ImageLoader extends EventQueues {
    * 获取image实例对应图片的地址
    * [注] 请确保在调用时，图片下载已完成
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -240,10 +240,22 @@ class ImageLoader extends EventQueues {
   }
 
   /**
+   * 获取image实例对应图片是否下载完成过
+   *
+   * @since 1.0.0
+   * @getter
+   * @readonly
+   * @returns {string}
+   */
+  get $complete() {
+    return this.$image && this.$image.complete
+  }
+
+  /**
    * 获取image实例的设置宽度
    * [注] 请确保在调用时，图片下载已完成
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -256,7 +268,7 @@ class ImageLoader extends EventQueues {
    * 获取image实例对应图片的真实宽度
    * [注] 请确保在调用时，图片下载已完成
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -269,7 +281,7 @@ class ImageLoader extends EventQueues {
    * 获取image实例的设置高度
    * [注] 请确保在调用时，图片下载已完成
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -282,7 +294,7 @@ class ImageLoader extends EventQueues {
    * 获取image实例对应图片的真实高度
    * [注] 请确保在调用时，图片下载已完成
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -295,7 +307,7 @@ class ImageLoader extends EventQueues {
    * 获取当前文件扩展名
    * [注] 请确保在调用时，图片下载已完成
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -308,7 +320,7 @@ class ImageLoader extends EventQueues {
    * 获取当前文件的mime类型
    * 仅在调用{@link ImageLoader#fetch}方法时有效
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -321,7 +333,7 @@ class ImageLoader extends EventQueues {
    * 获取当前文件的大小，单位：字节
    * 仅在调用{@link ImageLoader#fetch}方法时有效
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @getter
    * @readonly
    * @returns {string}
@@ -333,7 +345,7 @@ class ImageLoader extends EventQueues {
   /**
    * 载入图片
    *
-   * @since 1.3.0
+   * @since 1.0.0
    * @param {string} [imgSrc=''] - 图片地址
    * @param {number} [width] - 图片显示的宽
    * @param {number} [height] - 图片显示的高
