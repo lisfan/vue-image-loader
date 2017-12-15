@@ -18,15 +18,16 @@ const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 
 // 私有方法
 const _actions = {
-  mapValues(obj, iteratee) {
-    const map = {}
-
-    Object.entries(obj).forEach(([key, value]) => {
-      map[key] = iteratee.call(null, value, key, obj)
-    })
-
-    return map
-  },
+  /**
+   * 遍历并过滤出需要的对象键值
+   *
+   * @since 1.2.0
+   *
+   * @param {object} obj - 处理对象
+   * @param {function} iteratee - 迭代函数
+   *
+   * @returns {object}
+   */
   mapFilter(obj, iteratee) {
     const map = {}
 
@@ -36,6 +37,16 @@ const _actions = {
 
     return map
   },
+  /**
+   * 将成对格式统一的数组打包成一个对象
+   *
+   * @since 1.2.0
+   *
+   * @param {string[]} props - 作对打包对象的键名
+   * @param {array} values - 作对打包对象的值
+   *
+   * @returns {object}
+   */
   zipObject(props, values) {
     const zip = {}
 
@@ -50,7 +61,7 @@ const _actions = {
    *
    * @since 1.2.0
    *
-   * @param el
+   * @param {Element} el - 目标DOM节点
    * @param {?string|string[]} props - 获取样式，若未指定
    *
    * @return {object}
@@ -74,21 +85,40 @@ const _actions = {
       })
     }
   },
+  /**
+   * 为目标节点设置样式
+   *
+   * @since 1.2.0
+   *
+   * @param {Element} el - 目标DOM节点
+   * @param {object} styles - 设置的样式字段
+   */
   setElementStyles(el, styles) {
     Object.entries(styles).forEach(([prop, value]) => {
       el.style.setProperty(prop, value)
     })
   },
-  insertAfter(el, fragment) {
-    const nextNode = el.nextElementSibling
-    const parentNode = el.parentElement
+  /**
+   * 插入节点到目标节点
+   *
+   * @param {Element} targetNode - 目标DOM节点
+   * @param {Element} node - 插入节点
+   */
+  insertAfter(targetNode, node) {
+    const nextNode = targetNode.nextElementSibling
+    const parentNode = targetNode.parentElement
 
     if (nextNode) {
-      parentNode.insertBefore(nextNode, fragment)
+      parentNode.insertBefore(nextNode, node)
     } else {
-      parentNode.appendChild(fragment)
+      parentNode.appendChild(node)
     }
   },
+  /**
+   * 创建存在占位图片时的包裹节点
+   *
+   * @param {ElementShell} shell - 元素壳实例
+   */
   createContainerDom(shell) {
     const fragment = document.createDocumentFragment()
     const container = document.createElement('div')
@@ -127,6 +157,11 @@ const _actions = {
 
     shell.$el.style = shell.$el.style.cssText + '; position:relative; z-index:1'
   },
+  /**
+   * 载入中占位图片处理完成之后，移除容器节点
+   *
+   * @param {ElementShell} shell - 元素壳实例
+   */
   removeContainerDom(shell) {
     // 如果还存在容器，则进行移除
     if (shell.$parentNode && !shell.$animate) {
