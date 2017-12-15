@@ -4,6 +4,7 @@
  * @version 1.0.0
  * @licence MIT
  */
+
 import EventQueues from '@~lisfan/event-queues'
 
 // base64格式匹配正则表达式

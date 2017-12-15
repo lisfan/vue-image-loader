@@ -10,13 +10,7 @@ import ImageLoader from './image-loader'
 import ElementShell from './element-shell'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
-ImageLoader.config({
-  id: 10,
-  debug: true,
-  name: "msl"
-})
-
-const PLUGIN_TYPE = 'directive'
+const PLUGIN_TYPE = 'directive'  // 插件类型
 const DIRECTIVE_NAMESPACE = 'image-loader' // 指令名称
 
 // 透明图片base64
@@ -29,6 +23,7 @@ const _actions = {
    *
    * @param {object} binding - 指令对象
    * @param {object} placeholders - 占位图片枚举集合
+   *
    * @returns {string}
    */
   getPlaceholderImageSrc(binding, placeholders) {
@@ -79,6 +74,7 @@ const _actions = {
   },
   /**
    * 图片请求成功事件
+   *
    * @param {Vue} vm - vue实例
    * @param {ElementShell} shell - 元素壳实例
    * @param {boolean} animate - 全局配置，是否进行动效
@@ -147,7 +143,9 @@ export default {
    * 图片加载器注册函数
    *
    * @since 1.2.0
-   * @global
+   *
+   * @function install
+   *
    * @param {Vue} Vue - Vue构造器类
    * @param {object} [options={}] - 配置选项
    * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
@@ -175,8 +173,11 @@ export default {
      * - placeholder -自定义设置了当图片加载失败时，使用该图片占位(优先级高)。若未设定，将读取通过modifiers进行快捷指定的全局配置的占用图片
      * - image-src - 设置了图片'真正'需要加载的图片
      *
-     * @function image-loader
+     *
      * @since 1.2.0
+     *
+     * @function image-loader
+     *
      * @param {string} [arg=false] - 参数图片宽度尺寸
      * @param {string} [value=false] - 动效样式
      * @param {object} [modifiers] - 修饰符对象，除了force值外，其他值都将当成占位符的快捷指定
@@ -188,6 +189,7 @@ export default {
        * 初始化绑定
        *
        * @ignore
+       *
        * @param {element} $el - 目标dom元素
        * @param {object} binding - 指令对象
        * @param {VNode} vnode - vue节点对象
@@ -291,6 +293,7 @@ export default {
        * 值进行了更新
        *
        * @ignore
+       *
        * @param {element} $el - 目标dom元素
        * @param {object} binding - 指令对象
        * @param {VNode} vnode - vue节点对象

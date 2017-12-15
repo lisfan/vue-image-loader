@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ElementShell.html">ElementShell</a></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#exportsinstall">exportsinstall</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ElementShell.html">ElementShell</a></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
 </nav>
 
 <div id="main">
@@ -43,6 +43,7 @@
  * @version 1.0.0
  * @licence MIT
  */
+
 import EventQueues from '@~lisfan/event-queues'
 
 // base64格式匹配正则表达式
@@ -278,23 +279,28 @@ class ImageLoader extends EventQueues {
    * load方法执行时绑定的image对象
    *
    * @since 1.0.0
+   *
+   * @readonly
    */
-  $image = null
+  $image = undefined
 
   /**
    * fetch方法执行时绑定的blob对象
    *
    * @since 1.0.0
+   *
+   * @readonly
    */
-  $blob = null
+  $blob = undefined
 
   /**
    * 获取image实例对应图片的地址
    * [注] 请确保在调用时，图片下载已完成
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
+   *
    * @returns {string}
    */
   get $currentSrc() {
@@ -305,9 +311,10 @@ class ImageLoader extends EventQueues {
    * 获取image实例对应图片是否下载完成过
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
-   * @returns {string}
+   *
+   * @returns {boolean}
    */
   get $complete() {
     return this.$image &amp;&amp; this.$image.complete
@@ -318,9 +325,10 @@ class ImageLoader extends EventQueues {
    * [注] 请确保在调用时，图片下载已完成
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
-   * @returns {string}
+   *
+   * @returns {number}
    */
   get $width() {
     return this.$image &amp;&amp; this.$image.width
@@ -331,9 +339,10 @@ class ImageLoader extends EventQueues {
    * [注] 请确保在调用时，图片下载已完成
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
-   * @returns {string}
+   *
+   * @returns {number}
    */
   get $naturalWidth() {
     return this.$image &amp;&amp; this.$image.naturalWidth
@@ -344,9 +353,10 @@ class ImageLoader extends EventQueues {
    * [注] 请确保在调用时，图片下载已完成
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
-   * @returns {string}
+   *
+   * @returns {number}
    */
   get $height() {
     return this.$image &amp;&amp; this.$image.height
@@ -357,9 +367,10 @@ class ImageLoader extends EventQueues {
    * [注] 请确保在调用时，图片下载已完成
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
-   * @returns {string}
+   *
+   * @returns {number}
    */
   get $naturalHeight() {
     return this.$image &amp;&amp; this.$image.naturalHeight
@@ -370,8 +381,9 @@ class ImageLoader extends EventQueues {
    * [注] 请确保在调用时，图片下载已完成
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
+   *
    * @returns {string}
    */
   get $ext() {
@@ -383,8 +395,9 @@ class ImageLoader extends EventQueues {
    * 仅在调用{@link ImageLoader#fetch}方法时有效
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
+   *
    * @returns {string}
    */
   get $mime() {
@@ -393,12 +406,13 @@ class ImageLoader extends EventQueues {
 
   /**
    * 获取当前文件的大小，单位：字节
-   * 仅在调用{@link ImageLoader#fetch}方法时有效
+   * 仅在调用{@link ImageLoader#fetch}方法后，该值有效
    *
    * @since 1.0.0
+   *
    * @getter
-   * @readonly
-   * @returns {string}
+   *
+   * @returns {number}
    */
   get $size() {
     return this.$blob &amp;&amp; this.$blob.size
@@ -408,9 +422,11 @@ class ImageLoader extends EventQueues {
    * 载入图片
    *
    * @since 1.0.0
+   *
    * @param {string} [imageSrc=''] - 图片地址
    * @param {number} [width] - 图片显示的宽
    * @param {number} [height] - 图片显示的高
+   *
    * @returns {Promise}
    */
   load(imageSrc = '', width, height) {
@@ -456,6 +472,7 @@ class ImageLoader extends EventQueues {
    * [注] 若图片地址是dataURL格式，则直接返回dataURL，且{@link ImageLoader#$size}对应的是dataURL的容量大小（并不是原图片的容量大小）
    *
    * @param {string} [imageSrc=''] - 图片地址
+   *
    * @returns {Promise}
    */
   fetch(imageSrc = '') {
@@ -504,6 +521,7 @@ class ImageLoader extends EventQueues {
    * 调用该方法时，请确保$image值存在，或者base64的值存在
    *
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
+   *
    * @returns {Promise}
    */
   base64(format) {
@@ -563,7 +581,7 @@ export default ImageLoader</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 15 2017 10:23:52 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 15 2017 11:09:43 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
