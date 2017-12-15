@@ -70,7 +70,7 @@ class ElementShell {
   _vueLogger = undefined
 
   /**
-   * 获取dom实例
+   * 获取dom节点
    *
    * @since 1.0.0
    *
@@ -80,6 +80,32 @@ class ElementShell {
    */
   get $el() {
     return this.$options.el
+  }
+
+  /**
+   * 获取该dom节点经过包装之后的容器节点
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   *
+   * @returns {string}
+   */
+  get $parentNode() {
+    return this.$el.$parentNode
+  }
+
+  /**
+   * 设置该dom节点经过包装之后的容器节点
+   *
+   * @since 1.0.0
+   *
+   * @setter
+   *
+   * @param {string} val - 新值
+   */
+  set $parentNode(val) {
+    this.$el.$parentNode = val
   }
 
   /**
@@ -340,6 +366,32 @@ class ElementShell {
    */
   set $animationClassName(val) {
     this.$el.$animationClassName = val
+  }
+
+  /**
+   * 获取是否需要载入动效的状态
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   *
+   * @returns {boolean}
+   */
+  get $animate() {
+    return this.$el.$animate
+  }
+
+  /**
+   * 设置是否需要载入动效的状态
+   *
+   * @since 1.0.0
+   *
+   * @setter
+   *
+   * @param {boolean} val - 新值
+   */
+  set $animate(val) {
+    this.$el.$animate = val
   }
 
 }

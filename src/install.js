@@ -94,6 +94,8 @@ const _actions = {
     const container = document.createElement('div')
     const bgContent = document.createElement('div')
 
+    shell.$el.$parentNode = container
+
     // 设置container的样式
     _actions.setElementStyles(container, _actions.dumpComputedStyles(shell.$el))
 
@@ -124,6 +126,15 @@ const _actions = {
     container.appendChild(shell.$el)
 
     shell.$el.style = shell.$el.style.cssText + '; position:relative; z-index:1'
+  },
+  removeContainerDom(shell) {
+    // 如果还存在容器，则进行移除
+    if (shell.$parentNode && !shell.$animate) {
+      // 进行移除
+      _actions.insertAfter(shell.$parentNode, shell.$el)
+      shell.$parentNode.parentElement.removeChild(shell.$parentNode)
+      shell.$parentNode = null
+    }
   },
   /**
    * 计算宽高值
@@ -193,15 +204,23 @@ const _actions = {
       return
     }
 
+    shell.$animate = true
+
     // 为dom元素绑定动画结束事件
     // 若已绑定则不再重复绑定
     const animationEndHandler = function () {
+      // 标记动画已结束
+      shell.$animate = false
+
       const enterEndClassNameList = shell.$originClassNameList.slice()
       enterEndClassNameList.push(shell.$animationClassName + '-enter-end')
       shell.$el.setAttribute('class', enterEndClassNameList.join(' ').trim())
 
       // 动画结束后移除绑定事件
       removeAnimationEnd(shell.$el, animationEndHandler)
+
+      // 移除包裹dom
+      _actions.removeContainerDom(shell)
     }
 
     // 为节点绑定动画结束事件
@@ -244,12 +263,11 @@ const _actions = {
    *
    * @since 1.1.0
    *
-   * @param {Vue} vm - vue实例
    * @param {ElementShell} shell - 元素壳实例
    * @param {string} imageSrc - 请求图片地址
    * @param {boolean} animate - 全局配置，是否进行动效
    */
-  requestImage(vm, shell, imageSrc, animate) {
+  requestImage(shell, imageSrc, animate) {
     // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
     // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
     let imageLoader = new ImageLoader({
@@ -279,6 +297,8 @@ const _actions = {
   successHandler(shell, animate) {
     return function () {
       clearTimeout(shell.$loadingTimeouter)
+      // 移除包裹dom
+      _actions.removeContainerDom(shell)
 
       // 设置图片地址
       _actions.setImageSrc(shell.$el, shell.$currentImgSrc)
@@ -322,6 +342,8 @@ const _actions = {
   failHandler(shell, ImageLoader) {
     return function () {
       clearTimeout(shell.$loadingTimeouter)
+      // 移除包裹dom
+      _actions.removeContainerDom(shell)
 
       shell._vueLogger.log('image load faild:', shell.$currentImgSrc)
 
@@ -441,8 +463,8 @@ export default {
           _actions.setAnimationEndHandler(shell, animate)
 
           // 判断dom元素标签名，若为img标签元素，则设置透明图片占位，否则设置为该元素的背景
-          // 如果未指定src属性的值，则设置使用默认透明图片占位
-          if (validation.isEmpty(shell.$originImageSrc)) {
+          // 如果未指定src属性的值，且设置了载入中占位图片时，设置占位图片包裹容器
+          if (validation.isEmpty(shell.$originImageSrc) && !validation.isEmpty(shell.$loadingPhImageSrc)) {
             shell.$loadingTimeouter = setTimeout(() => {
               _actions.createContainerDom(shell)
             }, loadingDelay)
@@ -451,11 +473,11 @@ export default {
           if (validation.isEmpty(shell.$realImageSrc)) {
             // 若不存在真实图片地址，请求空白图片占位
             shell._vueLogger.log('image src no existed, request placeholder image resource!')
-            _actions.requestImage(vnode.context, shell, shell.$phImageSrc, animate)
+            _actions.requestImage(shell, shell.$phImageSrc, animate)
           } else {
             // 若存在真实图片地址，请求空白图片占位
             shell._vueLogger.log('image src existed, request image resource!')
-            _actions.requestImage(vnode.context, shell, shell.$realImageSrc, animate)
+            _actions.requestImage(shell, shell.$realImageSrc, animate)
           }
         })
       },
@@ -493,7 +515,7 @@ export default {
         shell.$realImageSrc = newImageSrc
 
         // 重新请求图片
-        _actions.requestImage(vnode.context, shell, newImageSrc, animate)
+        _actions.requestImage(shell, newImageSrc, animate)
       }
     })
   }
