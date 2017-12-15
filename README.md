@@ -81,36 +81,9 @@ Vue.use(VueImageLoader,{
 
 ## Feature 特性
 
+- `ImageLoader#load`和`ImageLoader#fetch`方法均会触发图片事件队列，事件队列的执行结果将作为resolve的值抛出
+- 获取图片之后转换为base64编码输出
+
 ## Detail 详情
 
-返回图片尺寸
-
-提供转换为base64功能
-
-
-扩展功能
-
-获取图片尺寸
-
-获取base64格式
-
-输出mime类型或者文件扩展名
-
-图片地址，尺寸，大小容量，扩展名
-
-
-每个方法都可以执行事件
-
-
-fetch也同样可以获取其他属性值
-
-
-load和fetch方法均会触发事件队列，事件队列的执行结果作为resolve的值传入
-
-base64只返回转换后的dataURL
-
-
-base64使用具体的格式
-
-
-load和fetch方法的图片地址是否是一致的
+- 使用`ImageLoader#fetch`会比`ImageLoader#load`方法可多获取两个实列属性：`ImageLoader#$mime`图片MIME类型和`ImageLoader#$size`图片容量容量
