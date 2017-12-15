@@ -19,7 +19,90 @@ const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 // 私有方法
 const _actions = {
   /**
+   * 计算宽高值
+   *
+   * @since 1.2.0
+   *
+   * @param {object} binding - 指令对象
+   *
+   * @returns {object}
+   */
+  getSize(binding) {
+    // 获取自定义高宽值
+    let sizeList = binding.arg
+      ? binding.arg.split('x')
+      : []
+
+    // 只截取前两个的值
+    let [width, height] = sizeList.slice(0, 2)
+
+    // 高不存在时则同样的宽值
+    height = height || width
+
+    return {
+      width,
+      height
+    }
+  },
+  /**
+   * 设置元素的宽高值
+   *
+   * @since 1.2.0
+   *
+   * @param {ElementShell} shell - 元素壳实例
+   * @param {object} binding - 指令对象
+   * @param {number} remRatio -  rem与px的比例
+   *
+   * @returns {undefined}
+   */
+  setClientSize(shell, binding, remRatio) {
+    // 获取宽高值
+    const { width, height } = _actions.getSize(binding)
+
+    // [注]：他拉伸的是直接的元素高度，不会自适应缩放
+    if (width || height) {
+      return
+    }
+
+    const widthStyle = (width / remRatio ) + 'rem'
+    const heightStyle = (height / remRatio ) + 'rem'
+    // 减少重绘，注意留空
+    shell.$el.style = `width:${widthStyle}; height:${heightStyle}; ` + $el.style
+  },
+  /**
+   * 设置目标元素的动效结束事件
+   *
+   * @since 1.2.0
+   *
+   * @param {ElementShell} shell - 元素壳实例
+   * @param {boolean} animate - 全局配置，是否进行动效
+   *
+   * @returns {undefined}
+   */
+  setAnimationEndHandler(shell, animate) {
+    // 若启用了动效且存在动效样式时
+    if (!animate || !shell.$animationClassName) {
+      return
+    }
+
+    // 为dom元素绑定动画结束事件
+    // 若已绑定则不再重复绑定
+    const animationEndHandler = function () {
+      const enterEndClassNameList = shell.$originClassNameList.slice()
+      enterEndClassNameList.push(shell.$animationClassName + '-enter-end')
+      shell.$el.setAttribute('class', enterEndClassNameList.join(' ').trim())
+
+      // 动画结束后移除绑定事件
+      removeAnimationEnd(shell.$el, animationEndHandler)
+    }
+
+    // 为节点绑定动画结束事件
+    addAnimationEnd(shell.$el, animationEndHandler)
+  },
+  /**
    * 获取匹配到的占位图片
+   *
+   * @since 1.1.0
    *
    * @param {object} binding - 指令对象
    * @param {object} placeholders - 占位图片枚举集合
@@ -38,6 +121,8 @@ const _actions = {
   /**
    * 根据dom元素的不同设置图片地址
    *
+   * @since 1.1.0
+   *
    * @param {Element} $el - 目标dom元素
    * @param {string} imageSrc - 图片地址
    */
@@ -48,6 +133,8 @@ const _actions = {
   },
   /**
    * 请求图片资源
+   *
+   * @since 1.1.0
    *
    * @param {Vue} vm - vue实例
    * @param {ElementShell} shell - 元素壳实例
@@ -75,6 +162,8 @@ const _actions = {
   },
   /**
    * 图片请求成功事件
+   *
+   * @since 1.1.0
    *
    * @param {ElementShell} shell - 元素壳实例
    * @param {boolean} animate - 全局配置，是否进行动效
@@ -117,6 +206,8 @@ const _actions = {
   /**
    * 图片请求失败事件
    *
+   * @since 1.1.0
+   *
    * @param {ElementShell} shell - 元素壳实例
    * @param {ImageLoader} imageLoader - 图片加载器实例
    */
@@ -141,14 +232,14 @@ export default {
   /**
    * 图片加载器注册函数
    *
-   * @since 1.2.0
+   * @since 1.1.0
    *
    * @function install
    *
    * @param {Vue} Vue - Vue构造器类
    * @param {object} [options={}] - 配置选项
    * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
-   * @param {number} [options.remRatio=100] - rem与px的比便关系，默认值为100，表示1rem=100px
+   * @param {number} [options.remRatio=100] - rem与px的比例，默认值为100，表示1rem=100px
    * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
    * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
    * @param {number} [options.loadingDelay=300] - 载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题
@@ -241,42 +332,11 @@ export default {
         // 若未自定义，则取全局配置force
         shell.$enableForceEffect = binding.modifiers.force || force
 
-        // 获取自定义高宽值
-        let sizeList = binding.arg
-          ? binding.arg.split('x')
-          : []
-
-        // 只截取前两个的值
-        let [width, height] = sizeList.slice(0, 2)
-
-        // 高不存在时则同样的宽值
-        height = height || width
-
         // 设置目标元素的高宽
-        // [注]：他拉伸的是直接的元素高度，不会自适应缩放
-        if (width && height) {
-          const widthStyle = (width / remRatio ) + 'rem'
-          const heightStyle = (height / remRatio ) + 'rem'
-          // 减少重绘，注意留空
-          $el.style = `width:${widthStyle}; height:${heightStyle}; ` + $el.style
-        }
+        _actions.setClientSize(shell, binding, remRatio)
 
-        // 若启用了动效且存在动效样式时
-        if (animate && shell.$animationClassName) {
-          // 为dom元素绑定动画结束事件
-          // 若已绑定则不再重复绑定
-          const animationEndHandler = function () {
-            const enterEndClassNameList = shell.$originClassNameList.slice()
-            enterEndClassNameList.push(shell.$animationClassName + '-enter-end')
-            $el.setAttribute('class', enterEndClassNameList.join(' ').trim())
-
-            // 动画结束后移除绑定事件
-            removeAnimationEnd($el, animationEndHandler)
-          }
-
-          // 为节点绑定动画结束事件
-          addAnimationEnd($el, animationEndHandler)
-        }
+        // 设置目标元素的动效结束事件
+        _actions.setAnimationEndHandler(shell, animate)
 
         if (validation.isEmpty(shell.$realImageSrc)) {
           // 若不存在真实图片地址，请求空白图片占位
