@@ -10,6 +10,12 @@ import ImageLoader from './image-loader'
 import ElementShell from './element-shell'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
+ImageLoader.config({
+  id: 10,
+  debug: true,
+  name: "msl"
+})
+
 const PLUGIN_TYPE = 'directive'
 const DIRECTIVE_NAMESPACE = 'image-loader' // 指令名称
 
@@ -56,7 +62,6 @@ const _actions = {
   requestImage(vm, shell, imageSrc, animate) {
     // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
     // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
-
     let imageLoader = new ImageLoader({
       debug: shell._vueLogger.$debug
     })
@@ -92,7 +97,7 @@ const _actions = {
       // 图片请求成功时非真实图片则不进行动画加载，直接替换
       // 性能优化：图片延迟加载，不要在同一时间内同时加载
       requestAnimationFrame(() => {
-        shell._vueLogger.log(vm, 'image load successed:', shell.$currentImgSrc)
+        shell._vueLogger.log('image load successed:', shell.$currentImgSrc)
 
         // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
         if (shell.$loaded || !animate || !shell.$animationClassName) {
@@ -124,7 +129,7 @@ const _actions = {
     return function () {
       clearTimeout(shell.$loadingTimeouter)
 
-      shell._vueLogger.log(vm, 'image load faild:', shell.$currentImgSrc)
+      shell._vueLogger.log('image load faild:', shell.$currentImgSrc)
 
       // 如果是二次加载图片且又失败
       // 则使用透明图片代替
@@ -191,10 +196,11 @@ export default {
         const shell = new ElementShell({
           el: $el,
           name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
-          debug: binding.debug || debug
+          debug: binding.debug || debug,
+          vm: vnode.context,
         })
 
-        shell._vueLogger.log(vnode.context, 'emit bind hook!')
+        shell._vueLogger.log('emit bind hook!')
 
         // 在目标节点上绑定该指令标识
         $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
@@ -273,11 +279,11 @@ export default {
 
         if (validation.isEmpty(shell.$realImageSrc)) {
           // 若不存在真实图片地址，请求空白图片占位
-          shell._vueLogger.log(vnode.context, 'image src no existed, request placeholder image resource!')
+          shell._vueLogger.log('image src no existed, request placeholder image resource!')
           _actions.requestImage(vnode.context, shell, shell.$phImageSrc, animate)
         } else {
           // 若存在真实图片地址，请求空白图片占位
-          shell._vueLogger.log(vnode.context, 'image src existed, request image resource!')
+          shell._vueLogger.log('image src existed, request image resource!')
           _actions.requestImage(vnode.context, shell, shell.$realImageSrc, animate)
         }
       },
@@ -293,10 +299,11 @@ export default {
         const shell = new ElementShell({
           el: $el,
           name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
-          debug: binding.debug || debug
+          debug: binding.debug || debug,
+          vm: vnode.context,
         })
 
-        shell._vueLogger.log(vnode.context, 'emit update hook!')
+        shell._vueLogger.log('emit update hook!')
 
         const newImageSrc = $el.getAttribute('image-src') || ''
 
@@ -307,7 +314,7 @@ export default {
 
         // 重新请求图片
         // 若强制启用了动效，则每次图片显示，都会执行动效
-        shell._vueLogger.log(vnode.context, 'image src updated, request image resource!')
+        shell._vueLogger.log('image src updated, request image resource!')
 
         // 更新新图片地址
         shell.$realImageSrc = newImageSrc
