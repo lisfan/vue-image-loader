@@ -1,7 +1,7 @@
 {
   "name": "@~lisfan/vue-image-loader",
   "version": "1.2.0",
-  "description": "vue指令插件-图片加载器：若请求的资源图片加载失败，使用默认占位图片代替",
+  "description": "vue指令插件-图片加载器",
   "main": "index.js",
   "scripts": {
     "pub-pre": "git pull && npm version prerelease",
