@@ -18,6 +18,113 @@ const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 
 // 私有方法
 const _actions = {
+  mapValues(obj, iteratee) {
+    const map = {}
+
+    Object.entries(obj).forEach(([key, value]) => {
+      map[key] = iteratee.call(null, value, key, obj)
+    })
+
+    return map
+  },
+  mapFilter(obj, iteratee) {
+    const map = {}
+
+    Object.entries(obj).forEach(([key, value]) => {
+      if (iteratee.call(null, value, key, obj) !== false) map[key] = value
+    })
+
+    return map
+  },
+  zipObject(props, values) {
+    const zip = {}
+
+    props.forEach((key, index) => {
+      zip[key] = values[index]
+    })
+
+    return zip
+  },
+  /**
+   * 获取已dom的实际样式集合
+   *
+   * @since 1.2.0
+   *
+   * @param el
+   * @param {?string|string[]} props - 获取样式，若未指定
+   *
+   * @return {object}
+   */
+  dumpComputedStyles(el, props) {
+    const styles = document.defaultView.getComputedStyle(el, null)
+
+    if (validation.isString(props)) {
+      return {
+        [props]: styles.getPropertyValue(props)
+      }
+    } else if (validation.isArray(props)) {
+      const values = props.map((value) => {
+        return styles.getPropertyValue(value)
+      })
+
+      return _actions.zipObject(props, values)
+    } else {
+      return _actions.mapFilter(styles, (value, key) => {
+        return validation.isFinite(Number(key)) ? false : value
+      })
+    }
+  },
+  setElementStyles(el, styles) {
+    Object.entries(styles).forEach(([prop, value]) => {
+      el.style.setProperty(prop, value)
+    })
+  },
+  insertAfter(el, fragment) {
+    const nextNode = el.nextElementSibling
+    const parentNode = el.parentElement
+
+    if (nextNode) {
+      parentNode.insertBefore(nextNode, fragment)
+    } else {
+      parentNode.appendChild(fragment)
+    }
+  },
+  createContainerDom(shell) {
+    const fragment = document.createDocumentFragment()
+    const container = document.createElement('div')
+    const bgContent = document.createElement('div')
+
+    // 设置container的样式
+    _actions.setElementStyles(container, _actions.dumpComputedStyles(shell.$el))
+
+    let otherStyle = '; position:relative'
+
+    otherStyle += container.style.getPropertyValue('display') === 'inline' && '; display:inline-block'
+
+    container.style = container.style.cssText + otherStyle
+
+    bgContent.style = `
+      position:absolute;
+      top:0;
+      bottom:0;
+      left:0;
+      right:0;
+      width:100%;
+      height:100%;
+      background-size:contain;
+      background-repeat: no-repeat;
+      background-image: url(${shell.$loadingPhImageSrc || PLACEHOLDER_IMAGE});
+    `
+
+    container.appendChild(bgContent)
+    fragment.appendChild(container)
+
+    _actions.insertAfter(shell.$el, fragment)
+
+    container.appendChild(shell.$el)
+
+    shell.$el.style = shell.$el.style.cssText + '; position:relative; z-index:1'
+  },
   /**
    * 计算宽高值
    *
@@ -60,14 +167,15 @@ const _actions = {
     const { width, height } = _actions.getSize(binding)
 
     // [注]：他拉伸的是直接的元素高度，不会自适应缩放
-    if (width || height) {
+    if (!width || !height) {
       return
     }
 
     const widthStyle = (width / remRatio ) + 'rem'
     const heightStyle = (height / remRatio ) + 'rem'
+
     // 减少重绘，注意留空
-    shell.$el.style = `width:${widthStyle}; height:${heightStyle}; ` + $el.style
+    shell.$el.style = `width:${widthStyle}; height:${heightStyle}; ` + shell.$el.style.cssText
   },
   /**
    * 设置目标元素的动效结束事件
@@ -285,68 +393,71 @@ export default {
        * @param {VNode} vnode - vue节点对象
        */
       bind($el, binding, vnode) {
-        const shell = new ElementShell({
-          el: $el,
-          name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
-          debug: binding.debug || debug,
-          vm: vnode.context,
+        // 因需要获取$el的属性，所以必须放在下一帧dom刷新才可以获取到样式
+        Vue.nextTick().then(() => {
+
+          const shell = new ElementShell({
+            el: $el,
+            name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
+            debug: binding.debug || debug,
+            vm: vnode.context,
+          })
+
+          shell._vueLogger.log('emit bind hook!')
+
+          // 在目标节点上绑定该指令标识
+          $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
+
+          // 在dom实例上绑定一些初次绑定保存的数据
+          // - 保存保默认占位图片的值
+          // - 若未自定义默认占位图片的值，从修饰符对象中找出第一个匹配中的占位图片
+          shell.$phImageSrc = $el.getAttribute('placeholder') || _actions.getPlaceholderImageSrc(binding, placeholders) || ''
+
+          // 获取载入中占位图片地址
+          shell.$loadingPhImageSrc = $el.getAttribute('loading-placeholder') || loadingPlaceholder || ''
+
+          shell.$originImageSrc = $el.getAttribute('src') || ''
+
+          // 获取真实图片地址
+          shell.$realImageSrc = $el.getAttribute('image-src') || ''
+
+          _actions.setImageSrc($el, PLACEHOLDER_IMAGE)
+
+          // 暂存原样式类
+          const originClassName = $el.getAttribute('class') || ''
+          shell.$originClassNameList = originClassName.split(' ')
+
+          // 自定义动画类
+          shell.$animationClassName = binding.value || ''
+
+          // 是否强制开启每次载入动效
+          // 若未自定义，则取全局配置force
+          shell.$enableForceEffect = binding.modifiers.force || force
+
+          // 设置目标元素的高宽
+          _actions.setClientSize(shell, binding, remRatio)
+
+          // 设置目标元素的动效结束事件
+          _actions.setAnimationEndHandler(shell, animate)
+
+          // 判断dom元素标签名，若为img标签元素，则设置透明图片占位，否则设置为该元素的背景
+          // 如果未指定src属性的值，则设置使用默认透明图片占位
+          if (validation.isEmpty(shell.$originImageSrc)) {
+            shell.$loadingTimeouter = setTimeout(() => {
+              _actions.createContainerDom(shell)
+            }, loadingDelay)
+          }
+
+          if (validation.isEmpty(shell.$realImageSrc)) {
+            // 若不存在真实图片地址，请求空白图片占位
+            shell._vueLogger.log('image src no existed, request placeholder image resource!')
+            _actions.requestImage(vnode.context, shell, shell.$phImageSrc, animate)
+          } else {
+            // 若存在真实图片地址，请求空白图片占位
+            shell._vueLogger.log('image src existed, request image resource!')
+            _actions.requestImage(vnode.context, shell, shell.$realImageSrc, animate)
+          }
         })
-
-        shell._vueLogger.log('emit bind hook!')
-
-        // 在目标节点上绑定该指令标识
-        $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
-
-        // 在dom实例上绑定一些初次绑定保存的数据
-        // - 保存保默认占位图片的值
-        // - 若未自定义默认占位图片的值，从修饰符对象中找出第一个匹配中的占位图片
-        shell.$phImageSrc = $el.getAttribute('placeholder') || _actions.getPlaceholderImageSrc(binding, placeholders) || ''
-
-        // 获取载入中占位图片地址
-        shell.$loadingPhImageSrc = $el.getAttribute('loading-placeholder') || ''
-
-        shell.$originImageSrc = $el.getAttribute('src') || ''
-
-        // 获取真实图片地址
-        shell.$realImageSrc = $el.getAttribute('image-src') || ''
-
-        // 判断dom元素标签名，若为img标签元素，则设置透明图片占位，否则设置为该元素的背景
-        // 如果未指定src属性的值，则设置使用默认透明图片占位
-
-        _actions.setImageSrc($el, PLACEHOLDER_IMAGE)
-
-        if (validation.isEmpty(shell.$originImageSrc)) {
-          shell.$loadingTimeouter = setTimeout(() => {
-            _actions.setImageSrc($el, shell.$loadingPhImageSrc || loadingPlaceholder || PLACEHOLDER_IMAGE)
-          }, loadingDelay)
-        }
-
-        // 暂存原样式类
-        const originClassName = $el.getAttribute('class') || ''
-        shell.$originClassNameList = originClassName.split(' ')
-
-        // 自定义动画类
-        shell.$animationClassName = binding.value || ''
-
-        // 是否强制开启每次载入动效
-        // 若未自定义，则取全局配置force
-        shell.$enableForceEffect = binding.modifiers.force || force
-
-        // 设置目标元素的高宽
-        _actions.setClientSize(shell, binding, remRatio)
-
-        // 设置目标元素的动效结束事件
-        _actions.setAnimationEndHandler(shell, animate)
-
-        if (validation.isEmpty(shell.$realImageSrc)) {
-          // 若不存在真实图片地址，请求空白图片占位
-          shell._vueLogger.log('image src no existed, request placeholder image resource!')
-          _actions.requestImage(vnode.context, shell, shell.$phImageSrc, animate)
-        } else {
-          // 若存在真实图片地址，请求空白图片占位
-          shell._vueLogger.log('image src existed, request image resource!')
-          _actions.requestImage(vnode.context, shell, shell.$realImageSrc, animate)
-        }
       },
       /**
        * 值进行了更新
