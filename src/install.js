@@ -58,6 +58,7 @@ const _actions = {
     // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
     // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
     let imageLoader = new ImageLoader({
+      name: shell._vueLogger.$name,
       debug: shell._vueLogger.$debug
     })
 
@@ -69,17 +70,16 @@ const _actions = {
     // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
     shell.$loaded = imageLoader.$complete && !shell.$enableForceEffect
 
-    imageLoader.on('load', _actions.successHandler(vm, shell, animate))
-    imageLoader.on('error', _actions.failHandler(vm, shell, imageLoader))
+    imageLoader.on('load', _actions.successHandler(shell, animate))
+    imageLoader.on('error', _actions.failHandler(shell, imageLoader))
   },
   /**
    * 图片请求成功事件
    *
-   * @param {Vue} vm - vue实例
    * @param {ElementShell} shell - 元素壳实例
    * @param {boolean} animate - 全局配置，是否进行动效
    */
-  successHandler(vm, shell, animate) {
+  successHandler(shell, animate) {
     return function () {
       clearTimeout(shell.$loadingTimeouter)
 
@@ -117,11 +117,10 @@ const _actions = {
   /**
    * 图片请求失败事件
    *
-   * @param {Vue} vm - vue实例
    * @param {ElementShell} shell - 元素壳实例
    * @param {ImageLoader} imageLoader - 图片加载器实例
    */
-  failHandler(vm, shell, ImageLoader) {
+  failHandler(shell, ImageLoader) {
     return function () {
       clearTimeout(shell.$loadingTimeouter)
 
