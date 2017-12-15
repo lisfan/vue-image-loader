@@ -1,1 +1,1 @@
-export { default } from './src/install'
+export { default } from './src/index'
