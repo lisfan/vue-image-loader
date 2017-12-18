@@ -454,7 +454,6 @@ export default {
       bind($el, binding, vnode) {
         // 因需要获取$el的属性，所以必须放在下一帧dom刷新才可以获取到样式
         Vue.nextTick().then(() => {
-
           const shell = new ElementShell({
             el: $el,
             name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
