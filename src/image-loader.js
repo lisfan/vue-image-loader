@@ -176,10 +176,10 @@ const _actions = {
 /**
  * @extends EventQueues
  *
- * @classdesc
- * 图片下载类
- *
+ * @description
  * [注] 继承了EventQueues类，附加的实例方法和属性请至{@link http://lisfan.github.io/event-queues|EventQueues API}文档查看
+ *
+ * @classdesc 图片下载类
  *
  * @class
  */
@@ -189,10 +189,11 @@ class ImageLoader extends EventQueues {
    *
    * @since 1.0.0
    *
-   * @readonly
    * @static
+   * @readonly
    * @memberOf ImageLoader
    *
+   * @type {object}
    * @property {boolean} debug=false - 打印器调试模式是否开启
    * @property {string} name='ImageLoader' - 打印器名称标记
    */
@@ -242,6 +243,8 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @readonly
+   *
+   * @type {Image}
    */
   $image = undefined
 
@@ -251,6 +254,8 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @readonly
+   *
+   * @type {Blob}
    */
   $blob = undefined
 
@@ -261,8 +266,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {string}
+   * @type {string}
    */
   get $currentSrc() {
     return this.$image && this.$image.currentSrc
@@ -274,8 +280,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {boolean}
+   * @type {boolean}
    */
   get $complete() {
     return this.$image && this.$image.complete
@@ -288,8 +295,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {number}
+   * @type {number}
    */
   get $width() {
     return this.$image && this.$image.width
@@ -302,8 +310,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {number}
+   * @type {number}
    */
   get $naturalWidth() {
     return this.$image && this.$image.naturalWidth
@@ -316,8 +325,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {number}
+   * @type {number}
    */
   get $height() {
     return this.$image && this.$image.height
@@ -330,8 +340,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {number}
+   * @type {number}
    */
   get $naturalHeight() {
     return this.$image && this.$image.naturalHeight
@@ -344,8 +355,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {string}
+   * @type {string}
    */
   get $ext() {
     return this.$image && _actions.getExtension(this.$currentSrc)
@@ -358,8 +370,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {string}
+   * @type {string}
    */
   get $mime() {
     return this.$blob && this.$blob.type
@@ -372,8 +385,9 @@ class ImageLoader extends EventQueues {
    * @since 1.0.0
    *
    * @getter
+   * @readonly
    *
-   * @returns {number}
+   * @type {number}
    */
   get $size() {
     return this.$blob && this.$blob.size
@@ -383,6 +397,8 @@ class ImageLoader extends EventQueues {
    * 载入图片
    *
    * @since 1.0.0
+   *
+   * @async
    *
    * @param {string} [imageSrc=''] - 图片地址
    * @param {number} [width] - 图片显示的宽
@@ -432,6 +448,10 @@ class ImageLoader extends EventQueues {
    * 此时，可以取实例上的{@link ImageLoader#$mime}和{@link ImageLoader#$size}两个实例属性
    * [注] 若图片地址是dataURL格式，则直接返回dataURL，且{@link ImageLoader#$size}对应的是dataURL的容量大小（并不是原图片的容量大小）
    *
+   * @since 1.0.0
+   *
+   * @async
+   *
    * @param {string} [imageSrc=''] - 图片地址
    *
    * @returns {Promise}
@@ -480,6 +500,10 @@ class ImageLoader extends EventQueues {
   /**
    * 输出base64格式
    * 调用该方法时，请确保$image值存在，或者base64的值存在
+   *
+   * @since 1.0.0
+   *
+   * @async
    *
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
    *

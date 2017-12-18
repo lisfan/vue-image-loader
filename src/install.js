@@ -443,6 +443,8 @@ export default {
       /**
        * 初始化绑定
        *
+       * @since 1.0.0
+       *
        * @ignore
        *
        * @param {element} $el - 目标dom元素
@@ -518,6 +520,8 @@ export default {
       },
       /**
        * 值进行了更新
+       *
+       * @since 1.0.0
        *
        * @ignore
        *

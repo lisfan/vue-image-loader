@@ -52,15 +52,6 @@ class ElementShell {
   }
 
   /**
-   * 实例配置项
-   *
-   * @since 1.0.0
-   *
-   * @readonly
-   */
-  $options = undefined
-
-  /**
    * 日志打印器，方便调试
    *
    * @since 1.0.0
@@ -70,13 +61,24 @@ class ElementShell {
   _vueLogger = undefined
 
   /**
+   * 实例配置项
+   *
+   * @since 1.0.0
+   *
+   * @readonly
+   *
+   * @type {object}
+   */
+  $options = undefined
+
+  /**
    * 获取dom节点
    *
    * @since 1.0.0
    *
    * @getter
    *
-   * @returns {string}
+   * @type {Element}
    */
   get $el() {
     return this.$options.el
@@ -89,7 +91,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $parentNode() {
     return this.$el.$parentNode
@@ -115,7 +117,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $currentImgSrc() {
     return this.$el.$currentImgSrc
@@ -141,7 +143,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $originImageSrc() {
     return this.$el.$originImageSrc
@@ -167,7 +169,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $realImageSrc() {
     return this.$el.$realImageSrc
@@ -193,7 +195,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $phImageSrc() {
     return this.$el.$phImageSrc
@@ -219,7 +221,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $loadingPhImageSrc() {
     return this.$el.$loadingPhImageSrc
@@ -245,7 +247,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {number}
+   * @type {number}
    */
   get $loadingTimeouter() {
     return this.$el.$loadingTimeouter
@@ -271,7 +273,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {array}
+   * @type {array}
    */
   get $originClassNameList() {
     return this.$el.$originClassNameList
@@ -297,7 +299,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {boolean}
+   * @type {boolean}
    */
   get $loaded() {
     return this.$el.$loaded
@@ -323,7 +325,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {boolean}
+   * @type {boolean}
    */
   get $enableForceEffect() {
     return this.$el.$enableForceEffect
@@ -349,7 +351,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {string}
+   * @type {string}
    */
   get $animationClassName() {
     return this.$el.$animationClassName
@@ -375,7 +377,7 @@ class ElementShell {
    *
    * @getter
    *
-   * @returns {boolean}
+   * @type {boolean}
    */
   get $animate() {
     return this.$el.$animate
