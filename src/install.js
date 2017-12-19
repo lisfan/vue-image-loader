@@ -32,7 +32,7 @@ const _actions = {
     const map = {}
 
     Object.entries(obj).forEach(([key, value]) => {
-      iteratee.call(null, value, key, obj) !== false && map[key] = value
+      if (iteratee.call(null, value, key, obj) !== false) map[key] = value
     })
 
     return map
