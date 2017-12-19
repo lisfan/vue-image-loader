@@ -32,7 +32,7 @@ const _actions = {
     const map = {}
 
     Object.entries(obj).forEach(([key, value]) => {
-      if (iteratee.call(null, value, key, obj) !== false) map[key] = value
+      iteratee.call(null, value, key, obj) !== false && map[key] = value
     })
 
     return map
@@ -221,7 +221,7 @@ const _actions = {
     const heightStyle = (height / remRatio ) + 'rem'
 
     // 减少重绘，注意留空
-    shell.$el.style = `width:${widthStyle}; height:${heightStyle}; ` + shell.$el.style.cssText
+    shell.$el.style = shell.$el.style.cssText + `; width:${widthStyle}; height:${heightStyle};`
   },
   /**
    * 设置目标元素的动效结束事件
@@ -411,7 +411,7 @@ export default {
    * @param {string} [options.loadingPlaceholder=''] - 全局配置图片载入中占位图片
    * @param {object} [options.placeholders={}] - 全局配置占位图片，key名会转换为修饰符
    */
-  install: function (Vue, {
+  install(Vue, {
     debug = false,
     remRatio = 100,
     animate = true,

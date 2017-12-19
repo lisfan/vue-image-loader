@@ -220,7 +220,7 @@ class ImageLoader extends EventQueues {
       ...options
     }
 
-    return ImageLoader
+    return this
   }
 
   /**
