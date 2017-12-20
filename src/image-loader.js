@@ -1,8 +1,5 @@
 /**
  * @file 图片下载类
- * @author lisfan <goolisfan@gmail.com>
- * @version 1.0.0
- * @licence MIT
  */
 
 import EventQueues from '@~lisfan/event-queues'

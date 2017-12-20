@@ -2,8 +2,6 @@
  * animation事件的浏览器兼容polyfill
  *
  * [注] 部分安卓机需要使用`webkitAnimationEnd`这样的写法
- *
- * @version 1.0.0
  */
 
 /**
