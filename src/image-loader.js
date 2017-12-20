@@ -207,9 +207,9 @@ class ImageLoader extends EventQueues {
    *
    * @since 1.0.0
    *
-   * @param {object} options - 配置参数
-   * @param {boolean} [options.debug=false] - 调试模式是否开启
-   * @param {string} [options.name='ImageLoader'] - 打印器名称标记
+   * @see ImageLoader.options
+   *
+   * @param {object} options - 其他配置选项见{@link ImageLoader.options}
    *
    * @returns {ImageLoader}
    */
@@ -226,9 +226,9 @@ class ImageLoader extends EventQueues {
   /**
    * 构造函数
    *
-   * @param {object} [options] - 实例配置选项，若参数为`string`类型，则表示设定为`options.name`的值
-   * @param {boolean} [options.debug=false] - 调试模式是否开启
-   * @param {string} [options.name='ImageLoader'] - 打印器名称标记
+   * @see ImageLoader.options
+   *
+   * @param {object} options - 其他配置选项见{@link ImageLoader.options}
    */
   constructor(options) {
     super({

@@ -8,8 +8,7 @@
 import VueLogger from '@~lisfan/vue-logger'
 
 /**
- * @classdesc
- * DOM元素数据封装类
+ * @classdesc DOM元素数据封装类
  *
  * @class
  */
@@ -21,7 +20,7 @@ class ElementShell {
    *
    * @static
    * @readonly
-   * @memberOf ImageLoader
+   * @memberOf ElementShell
    *
    * @property {string} name='ElementShell' - 打印器名称标记
    * @property {boolean} debug=false - 打印器调试模式是否开启
@@ -34,9 +33,9 @@ class ElementShell {
   /**
    * 构造函数
    *
-   * @param {string} options - 配置选项
-   * @param {string} [options.name='ElementShell'] - 日志器命名空间
-   * @param {boolean} [options.debug=true] - 调试模式是否开启
+   * @see ElementShell.options
+   *
+   * @param {object} options - 其他配置选项见{@link ElementShell.options}
    */
   constructor(options) {
     this.$options = {
@@ -61,7 +60,7 @@ class ElementShell {
   _vueLogger = undefined
 
   /**
-   * 实例配置项
+   * 实例初始配置项
    *
    * @since 1.0.0
    *
