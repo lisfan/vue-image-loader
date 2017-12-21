@@ -9,25 +9,38 @@ import ImageLoader from './image-loader'
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
 
 // 透明图片base64
-const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
+const TRANSPARENT_PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBJREFUeNpi/P//PwNAgAEACQEC/2m8kPAAAAAASUVORK5CYII='
 
 // 私有方法
 const _actions = {
+  /**
+   * 根据dom元素的不同设置图片地址
+   *
+   * @since 1.1.0
+   *
+   * @param {Element} el - 目标DOM节点
+   * @param {string} imageSrc - 图片地址
+   */
+  setImageSrc(el, imageSrc) {
+    el.nodeName === 'IMG'
+      ? el.setAttribute('src', imageSrc)
+      : el.style.backgroundImage = 'url("' + imageSrc + '")'
+  },
   /**
    * 遍历并过滤出需要的对象键值
    *
    * @since 1.2.0
    *
    * @param {object} obj - 处理对象
-   * @param {function} iteratee - 迭代函数
+   * @param {function} done - 迭代函数
    *
    * @returns {object}
    */
-  mapFilter(obj, iteratee) {
+  mapFilter(obj, done) {
     const map = {}
 
     Object.entries(obj).forEach(([key, value]) => {
-      if (iteratee.call(null, value, key, obj) !== false) map[key] = value
+      if (done.call(null, value, key, obj) !== false) map[key] = value
     })
 
     return map
@@ -109,10 +122,38 @@ const _actions = {
       parentNode.appendChild(node)
     }
   },
+
+  /**
+   * 设置元素的宽高值
+   * [注]：他拉伸的是直接的元素高度，不会自适应缩放
+   *
+   * @since 1.2.0
+   *
+   * @param {ImageElementShell} self - 实例自身
+   *
+   * @returns {undefined}
+   */
+  setClientSize(self) {
+    if (!self.$width || !self.$height) {
+      return
+    }
+
+    // 减少重绘，注意留空
+    self.$el.style = self.$el.style.cssText + `; width:${self.$width}; height:${self.$height};`
+  },
+  /**
+   * 设置dom节点样式类
+   *
+   * @param {ImageElementShell} self - 实例自身
+   * @param {string} classname - 样式名
+   */
+  setClassName(self, classname) {
+    self.$el.setAttribute('class', [...self._originClassNameList, classname].join(' ').trim())
+  },
   /**
    * 创建存在占位图片时的包裹节点
    *
-   * @param {ImageElementShell} self - 实例本身
+   * @param {ImageElementShell} self - 实例自身
    */
   createContainerDom(self) {
     const fragment = document.createDocumentFragment()
@@ -140,7 +181,7 @@ const _actions = {
       height:100%;
       background-size:contain;
       background-repeat: no-repeat;
-      background-image: url(${self.$loadingPlaceholder || PLACEHOLDER_IMAGE});
+      background-image: url(${self.$loadingPlaceholder || TRANSPARENT_PLACEHOLDER_IMAGE});
     `
 
     container.appendChild(bgContent)
@@ -155,60 +196,22 @@ const _actions = {
   /**
    * 载入中占位图片处理完成之后，移除容器节点
    *
-   * @param {ImageElementShell} self - 实例本身
-   */
-  removeContainerDom(self) {
-    // 如果还存在容器，则进行移除
-    if (self._parentNode && !self._canAnimate) {
-      // 进行移除
-      _actions.insertAfter(self._parentNode, self.$el)
-      self._parentNode.parentElement.removeChild(self._parentNode)
-      self._parentNode = null
-    }
-  },
-  /**
-   * 计算宽高值
-   *
-   * @since 1.2.0
-   *
-   * @param {object} binding - 指令对象
-   *
-   * @returns {object}
-   */
-  getSize(binding) {
-    // 获取自定义高宽值
-    let sizeList = binding.arg
-      ? binding.arg.split('x')
-      : []
-
-    // 只截取前两个的值
-    let [width, height] = sizeList.slice(0, 2)
-
-    // 高不存在时则同样的宽值
-    height = height || width
-
-    return {
-      width,
-      height
-    }
-  },
-  /**
-   * 设置元素的宽高值
-   * [注]：他拉伸的是直接的元素高度，不会自适应缩放
-   *
-   * @since 1.2.0
-   *
    * @param {ImageElementShell} self - 实例自身
    *
    * @returns {undefined}
    */
-  setClientSize(self) {
-    if (!self.$width || !self.$height) {
+  removeContainerDom(self) {
+    // 如果还存在容器，则进行移除
+    if (!self._parentNode || self._canAnimate) {
       return
     }
 
-    // 减少重绘，注意留空
-    self.$el.style = self.$el.style.cssText + `; width:${self.$width}; height:${self.$height};`
+    // 进行移除
+    _actions.insertAfter(self._parentNode, self.$el)
+
+    self._parentNode.parentElement.removeChild(self._parentNode)
+
+    self._parentNode = null
   },
   /**
    * 设置目标元素的动效结束事件
@@ -227,15 +230,15 @@ const _actions = {
 
     self._canAnimate = true
 
+    removeAnimationEnd(self.$el, animationEndHandler)
+
     // 为dom元素绑定动画结束事件
     // 若已绑定则不再重复绑定
     const animationEndHandler = function () {
       // 标记动画已结束
       self._canAnimate = false
 
-      const enterEndClassNameList = self._originClassNameList.slice()
-      enterEndClassNameList.push(self.$animationClassName + '-enter-end')
-      self.$el.setAttribute('class', enterEndClassNameList.join(' ').trim())
+      _actions.setClassName(self, self.$animationClassName + '-enter-end')
 
       // 动画结束后移除绑定事件
       removeAnimationEnd(self.$el, animationEndHandler)
@@ -247,52 +250,13 @@ const _actions = {
     // 为节点绑定动画结束事件
     addAnimationEnd(self.$el, animationEndHandler)
   },
-  /**
-   * 根据dom元素的不同设置图片地址
-   *
-   * @since 1.1.0
-   *
-   * @param {Element} $el - 目标dom元素
-   * @param {string} imageSrc - 图片地址
-   */
-  setImageSrc($el, imageSrc) {
-    $el.nodeName === 'IMG'
-      ? $el.setAttribute('src', imageSrc)
-      : $el.style.backgroundImage = 'url("' + imageSrc + '")'
-  },
-  /**
-   * 请求图片资源
-   *
-   * @since 1.1.0
-   *
-   * @param {ImageElementShell} self - 实例本身
-   * @param {string} imageSrc - 请求图片地址
-   */
-  requestImage(self, imageSrc) {
-    // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
-    // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
-    self._imageLoader = new ImageLoader({
-      name: self._logger.$name,
-      debug: self._logger.$debug
-    })
 
-    self.$currentSrc = imageSrc
-
-    // 载入图片
-    self._imageLoader.load(imageSrc)
-
-    // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
-    self._loaded = self._imageLoader.$complete && !self.$force
-
-    self._imageLoader.on('load', _actions.successHandler(self))
-    self._imageLoader.on('error', _actions.failHandler(self))
-  },
   /**
    * 图片请求成功事件
    *
    * @since 1.1.0
    *
-   * @param {ImageElementShell} self - 元素壳实例
+   * @param {ImageElementShell} self - 实例自身
    */
   successHandler(self) {
     return function () {
@@ -304,30 +268,27 @@ const _actions = {
       // 设置图片地址
       _actions.setImageSrc(self.$el, self.$currentSrc)
 
+      self._logger.log('image load successed:', self.$currentSrc)
+
+      // 当前图片地址非实际图片地址时，不进行动效载入
       if (self.$currentSrc !== self.$actualSrc) {
+        return
+      }
+
+      // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
+      if (self.$loaded || !self.$animate || !self.$animationClassName) {
         return
       }
 
       // 图片请求成功时非真实图片则不进行动画加载，直接替换
       // 性能优化：图片延迟加载，不要在同一时间内同时加载
       requestAnimationFrame(() => {
-        self._logger.log('image load successed:', self.$currentSrc)
-
-        // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
-        if (self._loaded || !self.$animate || !self.$animationClassName) {
-          return
-        }
-
         // 替换为起始样式
-        const enterClassNameList = self._originClassNameList.slice()
-        enterClassNameList.push(self.$animationClassName + '-enter')
-        self.$el.setAttribute('class', enterClassNameList.join(' ').trim())
+        _actions.setClassName(self, self.$animationClassName + '-enter')
 
-        // 替换为动画样式
         requestAnimationFrame(() => {
-          const enterActiveClassNameList = self._originClassNameList.slice()
-          enterActiveClassNameList.push(self.$animationClassName + '-enter-active')
-          self.$el.setAttribute('class', enterActiveClassNameList.join(' ').trim())
+          // 替换为动效激活样式
+          _actions.setClassName(self, self.$animationClassName + '-enter-active')
         })
       })
     }
@@ -337,7 +298,7 @@ const _actions = {
    *
    * @since 1.1.0
    *
-   * @param {ImageElementShell} self - 元素壳实例
+   * @param {ImageElementShell} self - 实例自身
    */
   failHandler(self) {
     return function () {
@@ -350,8 +311,8 @@ const _actions = {
 
       // 如果是二次加载图片且又失败
       // 则使用透明图片代替
-      self.$currentSrc = self.$currentSrc === self.$placeholder
-        ? PLACEHOLDER_IMAGE
+      self._currentSrc = self.$currentSrc === self.$placeholder
+        ? TRANSPARENT_PLACEHOLDER_IMAGE
         : self.$placeholder
 
       self._imageLoader.load(self.$currentSrc)
@@ -382,14 +343,14 @@ class ImageElementShell {
   static options = {
     name: 'ImageElementShell',
     debug: false,
-    el: null,
-    width: '',
-    height: '',
-    originSrc: '',
+    // el: null,
+    // width: '',
+    // height: '',
+    // originSrc: '',
     placeholder: '',
     loadingPlaceholder: '',
     loadingDelay: 300,
-    originClassName: '',
+    // originClassName: '',
     animationClassName: '',
     force: false,
     animate: true,
@@ -408,21 +369,23 @@ class ImageElementShell {
       ...options
     }
 
-    // 优先使用透明图片占位
-    _actions.setImageSrc(this.$el, PLACEHOLDER_IMAGE)
+    this._logger = new Logger({
+      name: this.$options.name,
+      debug: this.$options.debug
+    })
 
-    // 在dom实例上绑定一些初次绑定保存的数据
-    // - 保存保默认占位图片的值
-    // - 若未自定义默认占位图片的值，从修饰符对象中找出第一个匹配中的占位图片
+    // 1. 判断是否正在请求**占位图片**的步骤，若请求占位图片也失败，则使用**透明图片**代替占位
+    // 2. 如果动态图片地址和占位图片地址相同，则直接认为是在请求占位图片的步骤
+    this._imageLoader = new ImageLoader({
+      name: this.$options.name,
+      debug: this.$options.debug
+    })
 
-    // 占位图片
-    this._placeholder = this.$options.placeholder
+    this._imageLoader.on('load', _actions.successHandler(this))
+    this._imageLoader.on('error', _actions.failHandler(this))
 
-    // 载入中占位图片
-    this._loadingPlaceholder = this.$options.loadingPlaceholder
-
-    // 源图片
-    this._originSrc = this.$options.originSrc
+    // 优先使用透明图片占位，避免出现'叉'或'边框线'
+    _actions.setImageSrc(this.$el, TRANSPARENT_PLACEHOLDER_IMAGE)
 
     // 源样式列表
     this._originClassNameList = this.$options.originClassName.split(' ')
@@ -445,10 +408,37 @@ class ImageElementShell {
     this.$el._shell = this
   }
 
+  /**
+   * 请求图片资源
+   *
+   * @since 1.2.1
+   *
+   * @async
+   *
+   * @param {string} actualSrc - 请求图片地址
+   *
+   * @returns {Promise}
+   */
   load(actualSrc) {
     this._actualSrc = actualSrc
-    _actions.requestImage(this, actualSrc)
+    this._currentSrc = actualSrc
+
+    // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
+    this._loaded = this._imageLoader.$status === 'success' && !this.$force
+
+    // 载入图片
+    return this._imageLoader.load(actualSrc).then((result) => {
+      return Promise.resolve(result)
+    }).catch((err) => {
+      return Promise.reject(err)
+    })
   }
+
+  _parentNode = undefined
+  _loadingTimeouter = undefined
+
+  _originClassNameList = undefined
+  _canAnimate = undefined
 
   _imageLoader = undefined
   _logger = undefined
@@ -503,8 +493,6 @@ class ImageElementShell {
     return this.$options.height
   }
 
-  _parentNode = undefined
-
   _currentSrc = undefined
 
   /**
@@ -531,34 +519,6 @@ class ImageElementShell {
    */
   set $currentSrc(val) {
     this._currentSrc = val
-  }
-
-  _originSrc = undefined
-
-  /**
-   * 获取原图片地址
-   *
-   * @since 1.0.0
-   *
-   * @getter
-   *
-   * @type {string}
-   */
-  get $originSrc() {
-    return this._originSrc
-  }
-
-  /**
-   * 设置原图片地址
-   *
-   * @since 1.0.0
-   *
-   * @setter
-   *
-   * @param {string} val - 新值
-   */
-  set $originSrc(val) {
-    this._originSrc = val
   }
 
   _actualSrc = undefined
@@ -589,79 +549,6 @@ class ImageElementShell {
     this._actualSrc = val
   }
 
-  _placeholder = undefined
-
-  /**
-   * 获取真实图片加载失败时的占位图片地址
-   *
-   * @since 1.0.0
-   *
-   * @getter
-   *
-   * @type {string}
-   */
-  get $placeholder() {
-    return this._placeholder
-  }
-
-  /**
-   * 设置真实图片加载失败时的占位图片地址
-   *
-   * @since 1.0.0
-   *
-   * @setter
-   *
-   * @param {string} val - 新值
-   */
-  set $placeholder(val) {
-    this._placeholder = val
-  }
-
-  _loadingPlaceholder = undefined
-
-  /**
-   * 获取载入中占位图片地址
-   *
-   * @since 1.0.0
-   *
-   * @getter
-   *
-   * @type {string}
-   */
-  get $loadingPlaceholder() {
-    return this._loadingPlaceholder
-  }
-
-  /**
-   * 设置载入中占位图片地址
-   *
-   * @since 1.0.0
-   *
-   * @setter
-   *
-   * @param {string} val - 新值
-   */
-  set $loadingPlaceholder(val) {
-    this._loadingPlaceholder = val
-  }
-
-  /**
-   * 获取载入中占位图片延迟加载的时间
-   *
-   * @since 1.0.0
-   *
-   * @getter
-   *
-   * @type {number}
-   */
-  get $loadingDelay() {
-    return this.$options.loadingDelay
-  }
-
-  _loadingTimeouter = undefined
-
-  _originClassNameList = undefined
-
   _loaded = undefined
 
   /**
@@ -688,6 +575,58 @@ class ImageElementShell {
    */
   set $loaded(val) {
     this._loaded = val
+  }
+
+  /**
+   * 获取原图片地址
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   *
+   * @type {string}
+   */
+  get $originSrc() {
+    return this.$options.originSrc
+  }
+
+  /**
+   * 获取真实图片加载失败时的占位图片地址
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   *
+   * @type {string}
+   */
+  get $placeholder() {
+    return this.$options.placeholder
+  }
+
+  /**
+   * 获取载入中占位图片地址
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   *
+   * @type {string}
+   */
+  get $loadingPlaceholder() {
+    return this.$options.loadingPlaceholder
+  }
+
+  /**
+   * 获取载入中占位图片延迟加载的时间
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   *
+   * @type {number}
+   */
+  get $loadingDelay() {
+    return this.$options.loadingDelay
   }
 
   /**
@@ -728,6 +667,7 @@ class ImageElementShell {
   get $animate() {
     return this.$options.animate
   }
+
 }
 
 export default ImageElementShell

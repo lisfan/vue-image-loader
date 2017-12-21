@@ -4,6 +4,9 @@
 
 import EventQueues from '@~lisfan/event-queues'
 
+// 下载成功过的图片列表池
+const loadedImageList = []
+
 // base64格式匹配正则表达式
 const BASE64_REG = /data:(.*);base64,/
 
@@ -17,6 +20,8 @@ const _actions = {
    * @returns {boolean}
    */
   isSameResource(self, imageSrc) {
+    console.log('imageSrc', imageSrc)
+    console.log('self.$currentSrc', self.$currentSrc)
     return imageSrc === self.$currentSrc
   },
   /**
@@ -256,9 +261,10 @@ class ImageLoader extends EventQueues {
    */
   $blob = undefined
 
+  _currentSrc = undefined
+
   /**
-   * 获取image实例对应图片的地址
-   * [注] 请确保在调用时，图片下载已完成
+   * 图片的地址
    *
    * @since 1.0.0
    *
@@ -268,7 +274,7 @@ class ImageLoader extends EventQueues {
    * @type {string}
    */
   get $currentSrc() {
-    return this.$image && this.$image.currentSrc
+    return this._currentSrc
   }
 
   /**
@@ -283,6 +289,38 @@ class ImageLoader extends EventQueues {
    */
   get $complete() {
     return this.$image && this.$image.complete
+  }
+
+  _status = undefined
+
+  /**
+   * 获取image实例对应图片的下载是否成功状态值
+   *
+   * @since 1.2.1
+   *
+   * @getter
+   * @readonly
+   *
+   * @type {string}
+   */
+  get $status() {
+    return this._status
+  }
+
+  _loaded = undefined
+
+  /**
+   * 获取image实例对应图片是否已下载过
+   *
+   * @since 1.0.0
+   *
+   * @getter
+   * @readonly
+   *
+   * @type {boolean}
+   */
+  get $loaded() {
+    return this._loaded
   }
 
   /**
@@ -405,38 +443,48 @@ class ImageLoader extends EventQueues {
    */
   load(imageSrc = '', width, height) {
     return new Promise((resolve, reject) => {
-      try {
-        if (!_actions.isSameResource(self, imageSrc)) {
-          this.$blob = null
+      if (!_actions.isSameResource(this, imageSrc)) {
+        this.$blob = null
+      }
+
+      this._currentSrc = imageSrc
+
+      this.$image = new Image(width, height)
+
+      // // 启用跨域请求
+      // this.$image.crossOrigin = '*'
+
+      this.$image.addEventListener('load', () => {
+        this._logger.log('image load successed!')
+        this._status = 'success'
+
+        if (loadedImageList.indexOf(this.$currentSrc) >= 0) {
+          this._loaded = true
+        } else {
+          this._loaded = false
+          loadedImageList.push(this.$currentSrc)
         }
 
-        this.$image = new Image(width, height)
-
-        // 启用跨域请求
-        this.$image.crossOrigin = '*'
-
-        this.$image.addEventListener('load', () => {
-          this._logger.log('image load successed!')
-          this.emit('load').then((result) => {
-            resolve(result)
-          }).catch((err) => {
-            reject(err)
-          })
+        this.emit('load').then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
         })
+      })
 
-        this.$image.addEventListener('error', () => {
-          this._logger.log('image load error!')
-          this.emit('error').then((result) => {
-            reject(result)
-          }).catch((err) => {
-            reject(err)
-          })
+      this.$image.addEventListener('error', () => {
+        this._logger.log('image load failed!')
+        this._status = 'fail'
+
+        this.emit('error').then((result) => {
+          reject(result)
+        }).catch((err) => {
+          reject(err)
         })
+      })
 
-        this.$image.src = imageSrc
-      } catch (err) {
-        reject(err)
-      }
+      this.$image.src = imageSrc
+
     })
   }
 
@@ -456,41 +504,53 @@ class ImageLoader extends EventQueues {
   fetch(imageSrc = '') {
     // 如果已经是base64格式
     return new Promise((resolve, reject) => {
-      try {
-        if (!_actions.isSameResource(this, imageSrc)) {
-          this.$image = null
-        }
-
-        const matched = imageSrc.match(BASE64_REG)
-
-        // 如果本身是base64
-        if (matched) {
-          this.$blob = _actions.dataURLToBlob(imageSrc)
-          return this.load(imageSrc).then((result) => {
-            resolve(result)
-          }).catch((err) => {
-            reject(err)
-          })
-        }
-
-        return _actions.ajax(imageSrc, 'get', 'blob').then((result) => {
-          this.$blob = result.response
-
-          this.emit('load').then((result) => {
-            resolve(result)
-          }).catch((err) => {
-            reject(err)
-          })
-        }).catch(() => {
-          this.emit('error').then((result) => {
-            reject(result)
-          }).catch((err) => {
-            reject(err)
-          })
-        })
-      } catch (err) {
-        reject(err)
+      if (!_actions.isSameResource(this, imageSrc)) {
+        this.$image = null
       }
+
+      this._currentSrc = imageSrc
+
+      const matched = imageSrc.match(BASE64_REG)
+
+      // 如果本身是base64
+      if (matched) {
+        this.$blob = _actions.dataURLToBlob(imageSrc)
+        return this.load(imageSrc).then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        })
+      }
+
+      return _actions.ajax(imageSrc, 'get', 'blob').then((result) => {
+        this.$blob = result.response
+
+        this.load(imageSrc).then((loadResult) => {
+          resolve(loadResult)
+        }).catch((err) => {
+          reject(err)
+        })
+
+        // if (loadedImageList.indexOf(this.$currentSrc) >= 0) {
+        //   this._loaded = true
+        // } else {
+        //   this._loaded = false
+        //   loadedImageList.push(this.$currentSrc)
+        // }
+
+        // this.emit('load').then((result) => {
+        //   resolve(result)
+        // }).catch((err) => {
+        //   reject(err)
+        // })
+      }).catch((err) => {
+        reject(err)
+        // this.emit('error').then((result) => {
+        //   reject(result)
+        // }).catch((err) => {
+        //   reject(err)
+        // })
+      })
     })
   }
 
@@ -508,45 +568,44 @@ class ImageLoader extends EventQueues {
    */
   base64(format) {
     return new Promise((resolve, reject) => {
-      try {
-        // 如果ImageLoader#$image和ImageLoader#$dataURL都不存在，则抛出错误
-        if (!this.$blob && !this.$image) {
-          reject('image resource does not load! please use once (ImageLoader#load) or (ImageLoader#fetch) method.')
-        }
-
-        // 假如优先存在$image则优先处理
-        if (this.$image) {
-          // 如果图片本身是base64
-          const matched = this.$currentSrc.match(BASE64_REG)
-
-          // 如果本身是base64
-          if (matched) {
-            return resolve(this.$currentSrc)
-          }
-
-          return resolve(_actions.canvasToDataURL(this, this.$image, format))
-        }
-
-        // 之后再处理$blob进行处理
-        _actions.blobToDataURL(this.$blob).then((dataURL) => {
-          // 加载图片，转换url
-          // 若format与当前后缀格式不匹配，则进行格式转换
-          const mime = _actions.getMimeType(format)
-
-          // 如果相等
-          if (!mime || this.$mime === mime) {
-            return resolve(dataURL)
-          }
-
-          const image = new Image()
-          image.src = dataURL
-          image.addEventListener('load', () => {
-            return resolve(_actions.canvasToDataURL(this, image, format))
-          })
-        })
-      } catch (err) {
-        reject(err)
+      // 如果ImageLoader#$image和ImageLoader#$dataURL都不存在，则抛出错误
+      if (!this.$blob && !this.$image) {
+        reject('image resource does not load! please use once (ImageLoader#load) or (ImageLoader#fetch) method.')
       }
+
+      // 假如优先存在$image则优先处理
+      // if (this.$image) {
+      // 如果图片本身是base64
+      const matched = this.$currentSrc.match(BASE64_REG)
+
+      // 如果本身是base64
+      if (matched) {
+        return resolve(this.$currentSrc)
+      }
+
+      return resolve(_actions.canvasToDataURL(this, this.$image, format))
+      // }
+
+      // // 如果只存在$blob
+      // _actions.blobToDataURL(this.$blob).then((dataURL) => {
+      //   // 加载图片，转换url
+      //   // 若format与当前后缀格式不匹配，则进行格式转换
+      //   const mime = _actions.getMimeType(format)
+      //
+      //   // 如果相等
+      //   if (!mime || this.$mime === mime) {
+      //     return resolve(dataURL)
+      //   }
+      //
+      //   // 转化为base64格式
+      //   const image = new Image()
+      //
+      //   image.src = dataURL
+      //
+      //   image.addEventListener('load', () => {
+      //     return resolve(_actions.canvasToDataURL(this, image, format))
+      //   })
+      // })
     })
   }
 }

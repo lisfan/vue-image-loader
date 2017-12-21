@@ -80,11 +80,12 @@ export default {
   install(Vue, {
     debug = false,
     remRatio = 100,
-    animate = ImageElementShell.animate,
-    force = ImageElementShell.force,
-    loadingDelay = ImageElementShell.loadingDelay,
-    loadingPlaceholder = ImageElementShell.loadingPlaceholder,
-    placeholders = {}
+    placeholders = {},
+    loadingDelay = ImageElementShell.options.loadingDelay,
+    loadingPlaceholder = ImageElementShell.options.loadingPlaceholder,
+    animationClassName = ImageElementShell.options.animationClassName,
+    force = ImageElementShell.options.force,
+    animate = ImageElementShell.options.animate,
   } = {}) {
     /**
      * vue指令：image-loader
@@ -138,14 +139,14 @@ export default {
             debug: vueLogger.$debug,
             name: vueLogger.$name,
             el: $el,
-            width,
-            height,
-            originSrc: $el.getAttribute('src'),
-            placeholder: $el.getAttribute('placeholder') || _actions.getPlaceholder(binding, placeholders),
-            loadingPlaceholder: $el.getAttribute('loading-placeholder') || loadingPlaceholder,
+            width: width || '',
+            height: height || '',
+            originSrc: $el.getAttribute('src') || '',
+            placeholder: $el.getAttribute('placeholder') || _actions.getPlaceholder(binding, placeholders) || '',
+            loadingPlaceholder: $el.getAttribute('loading-placeholder') || loadingPlaceholder || '',
             loadingDelay,
-            originClassName: $el.getAttribute('class'),
-            animationClassName: binding.value,
+            originClassName: $el.getAttribute('class') || '',
+            animationClassName: binding.value || animationClassName || '',
             force: binding.modifiers.force || force,
             animate,
           })
@@ -197,6 +198,8 @@ export default {
         vueLogger.log('image src updated, request image resource!')
 
         shell.load(actualSrc)
+
+        console.log('shell', shell)
       }
     })
   }
