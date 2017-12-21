@@ -109,15 +109,15 @@ const _actions = {
   /**
    * 插入节点到目标节点
    *
-   * @param {Element} targetNode - 目标DOM节点
    * @param {Element} node - 插入节点
+   * @param {Element} targetNode - 目标DOM节点
    */
-  insertAfter(targetNode, node) {
+  insertAfter(node, targetNode) {
     const nextNode = targetNode.nextElementSibling
     const parentNode = targetNode.parentElement
 
     if (nextNode) {
-      parentNode.insertBefore(nextNode, node)
+      parentNode.insertBefore(node, nextNode)
     } else {
       parentNode.appendChild(node)
     }
@@ -156,6 +156,11 @@ const _actions = {
    * @param {ImageElementShell} self - 实例自身
    */
   createContainerDom(self) {
+    // 优先触发节点的占位节点（避免dom增删而查找不到对应的节点）
+    self._placeholderNode = document.createElement('span')
+
+    self.$el.parentElement.insertBefore(self._placeholderNode, self.$el)
+
     const fragment = document.createDocumentFragment()
     const container = document.createElement('div')
     const bgContent = document.createElement('div')
@@ -184,12 +189,11 @@ const _actions = {
       background-image: url(${self.$loadingPlaceholder || TRANSPARENT_PLACEHOLDER_IMAGE});
     `
 
+    container.appendChild(self.$el)
     container.appendChild(bgContent)
     fragment.appendChild(container)
 
-    _actions.insertAfter(self.$el, fragment)
-
-    container.appendChild(self.$el)
+    _actions.insertAfter(fragment, self._placeholderNode)
 
     self.$el.style = self.$el.style.cssText + '; position:relative; z-index:1'
   },
@@ -202,16 +206,18 @@ const _actions = {
    */
   removeContainerDom(self) {
     // 如果还存在容器，则进行移除
-    if (!self._parentNode || self._canAnimate) {
+    if (!self._parentNode || !self._placeholderNode || self._animationing) {
       return
     }
 
     // 进行移除
-    _actions.insertAfter(self._parentNode, self.$el)
+    _actions.insertAfter(self.$el, self._parentNode)
 
     self._parentNode.parentElement.removeChild(self._parentNode)
+    self._placeholderNode.parentElement.removeChild(self._placeholderNode)
 
     self._parentNode = null
+    self._placeholderNode = null
   },
   /**
    * 设置目标元素的动效结束事件
@@ -228,15 +234,14 @@ const _actions = {
       return
     }
 
-    self._canAnimate = true
-
     removeAnimationEnd(self.$el, animationEndHandler)
 
     // 为dom元素绑定动画结束事件
     // 若已绑定则不再重复绑定
     const animationEndHandler = function () {
       // 标记动画已结束
-      self._canAnimate = false
+      self._animationing = false
+      self._loaded = true
 
       _actions.setClassName(self, self.$animationClassName + '-enter-end')
 
@@ -310,13 +315,15 @@ const _actions = {
     }
 
     // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
-    if (self.$loaded || !self.$animate || !self.$animationClassName) {
+    if (self._canAnimate || !self.$animate || !self.$animationClassName) {
       return
     }
 
     // 图片请求成功时非真实图片则不进行动画加载，直接替换
     // 性能优化：图片延迟加载，不要在同一时间内同时加载
     requestAnimationFrame(() => {
+      self._animationing = true
+
       // 替换为起始样式
       _actions.setClassName(self, self.$animationClassName + '-enter')
 
@@ -355,7 +362,7 @@ class ImageElementShell {
     // width: '',
     // height: '',
     // originSrc: '',
-    placeholder: '',
+    placeholder: {},
     loadingPlaceholder: '',
     loadingDelay: 300,
     // originClassName: '',
@@ -431,24 +438,27 @@ class ImageElementShell {
     this._actualSrc = actualSrc
     this._currentSrc = actualSrc
 
-    // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
+    // 如果未进行过动效，且这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
 
     // 载入图片
     return this._imageLoader.load(actualSrc).then((result) => {
-      this._loaded = this._imageLoader.$loaded && !this.$force
+      this._canAnimate = this.$loaded && this._imageLoader.$loaded && !this.$force
 
       _actions.startAnimationing(this)
       return Promise.resolve(result)
     }).catch((err) => {
+      this._canAnimate = false
       this._loaded = false
       return Promise.reject(err)
     })
   }
 
   _parentNode = undefined
+  _placeholderNode = undefined
   _loadingTimeouter = undefined
 
   _originClassNameList = undefined
+  _animationing = undefined
   _canAnimate = undefined
 
   _imageLoader = undefined
@@ -560,10 +570,10 @@ class ImageElementShell {
     this._actualSrc = val
   }
 
-  _loaded = undefined
+  _loaded
 
   /**
-   * 获取真实图片是否加载成功的状态
+   * 获取实例真实图片是否加载成功过
    *
    * @since 1.0.0
    *
@@ -573,19 +583,6 @@ class ImageElementShell {
    */
   get $loaded() {
     return this._loaded
-  }
-
-  /**
-   * 设置真实图片是否加载成功的状态
-   *
-   * @since 1.0.0
-   *
-   * @setter
-   *
-   * @param {boolean} val - 新值
-   */
-  set $loaded(val) {
-    this._loaded = val
   }
 
   /**

@@ -20,8 +20,6 @@ const _actions = {
    * @returns {boolean}
    */
   isSameResource(self, imageSrc) {
-    console.log('imageSrc', imageSrc)
-    console.log('self.$currentSrc', self.$currentSrc)
     return imageSrc === self.$currentSrc
   },
   /**

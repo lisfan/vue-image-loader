@@ -18,6 +18,7 @@ const _actions = {
    * @since 1.2.0
    *
    * @param {object} binding - 指令对象
+   * @param {number} remRatio - rem与px的比例，默认值为100，表示1rem=100px
    *
    * @returns {object}
    */
@@ -69,6 +70,7 @@ export default {
    *
    * @param {Vue} Vue - Vue构造器类
    * @param {object} [options={}] - 配置选项
+   * @param {string} [options.name='directive-image-loader'] - 日志打印器命名空间
    * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
    * @param {number} [options.remRatio=100] - rem与px的比例，默认值为100，表示1rem=100px
    * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
@@ -78,9 +80,10 @@ export default {
    * @param {object} [options.placeholders={}] - 全局配置占位图片，key名会转换为修饰符
    */
   install(Vue, {
-    debug = false,
+    name = `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
+    debug = ImageElementShell.options.placeholders,
     remRatio = 100,
-    placeholders = {},
+    placeholders = ImageElementShell.options.placeholders,
     loadingDelay = ImageElementShell.options.loadingDelay,
     loadingPlaceholder = ImageElementShell.options.loadingPlaceholder,
     animationClassName = ImageElementShell.options.animationClassName,
@@ -123,7 +126,7 @@ export default {
         $el.setAttribute(`v-${DIRECTIVE_NAMESPACE}`, '')
 
         const vueLogger = new VueLogger({
-          name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
+          name,
           debug: binding.debug || debug,
           vm: vnode.context,
         })
@@ -198,8 +201,6 @@ export default {
         vueLogger.log('image src updated, request image resource!')
 
         shell.load(actualSrc)
-
-        console.log('shell', shell)
       }
     })
   }
