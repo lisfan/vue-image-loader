@@ -83,8 +83,8 @@ Vue.use(VueImageLoader,{
 
 - `ImageLoader#load`和`ImageLoader#fetch`方法均会触发图片事件队列，事件队列的执行结果将作为resolve的值抛出
 - 获取图片之后转换为base64编码输出
-- 内建图片下载池管理列表，若已下载成功过，则不会重复下载
 
 ## Detail 详情
 
 - 使用`ImageLoader#fetch`会比`ImageLoader#load`方法可多获取两个实列属性：`ImageLoader#$mime`图片MIME类型和`ImageLoader#$size`图片容量容量
+- 内建图片下载池管理列表，若已下载成功过的图片，再次下载时，返回的`ImageLoader#loaded`实例属性为true

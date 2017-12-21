@@ -269,28 +269,6 @@ const _actions = {
       _actions.setImageSrc(self.$el, self.$currentSrc)
 
       self._logger.log('image load successed:', self.$currentSrc)
-
-      // 当前图片地址非实际图片地址时，不进行动效载入
-      if (self.$currentSrc !== self.$actualSrc) {
-        return
-      }
-
-      // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
-      if (self.$loaded || !self.$animate || !self.$animationClassName) {
-        return
-      }
-
-      // 图片请求成功时非真实图片则不进行动画加载，直接替换
-      // 性能优化：图片延迟加载，不要在同一时间内同时加载
-      requestAnimationFrame(() => {
-        // 替换为起始样式
-        _actions.setClassName(self, self.$animationClassName + '-enter')
-
-        requestAnimationFrame(() => {
-          // 替换为动效激活样式
-          _actions.setClassName(self, self.$animationClassName + '-enter-active')
-        })
-      })
     }
   },
   /**
@@ -317,6 +295,36 @@ const _actions = {
 
       self._imageLoader.load(self.$currentSrc)
     }
+  },
+
+  /**
+   * 开始进行动效
+   * @param {ImageElementShell} self - 实例自身
+   *
+   * @returns {undefined}
+   */
+  startAnimationing(self) {
+    // 当前图片地址非实际图片地址时，不进行动效载入
+    if (self.$currentSrc !== self.$actualSrc) {
+      return
+    }
+
+    // 图片未加载完毕，且开启了动效，且存在动效名称时，才进行动画
+    if (self.$loaded || !self.$animate || !self.$animationClassName) {
+      return
+    }
+
+    // 图片请求成功时非真实图片则不进行动画加载，直接替换
+    // 性能优化：图片延迟加载，不要在同一时间内同时加载
+    requestAnimationFrame(() => {
+      // 替换为起始样式
+      _actions.setClassName(self, self.$animationClassName + '-enter')
+
+      requestAnimationFrame(() => {
+        // 替换为动效激活样式
+        _actions.setClassName(self, self.$animationClassName + '-enter-active')
+      })
+    })
   }
 }
 
@@ -424,12 +432,15 @@ class ImageElementShell {
     this._currentSrc = actualSrc
 
     // 如果这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
-    this._loaded = this._imageLoader.$status === 'success' && !this.$force
 
     // 载入图片
     return this._imageLoader.load(actualSrc).then((result) => {
+      this._loaded = this._imageLoader.$loaded && !this.$force
+
+      _actions.startAnimationing(this)
       return Promise.resolve(result)
     }).catch((err) => {
+      this._loaded = false
       return Promise.reject(err)
     })
   }

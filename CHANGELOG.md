@@ -3,6 +3,7 @@
 ## v1.2.2
 ### 2017.12.20
 - [refactor] 对dom元素的数据绑定和操作继续解耦，以方便以后可以方便迁移到其他库中
+- [feature] ImageLoader类增加status和loaded实例属性
 
 ## v1.2.1
 ### 2017.12.15
