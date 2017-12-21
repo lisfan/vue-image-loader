@@ -2,8 +2,8 @@
  * @file vue指令插件-图片加载器
  */
 
-import validation from '@~lisfan/validation'
-import VueLogger from '@~lisfan/vue-logger'
+import validation from '@xkeshi/validation'
+import VueLogger from '@xkeshi/vue-logger'
 
 import ImageElementShell from './image-element-shell'
 

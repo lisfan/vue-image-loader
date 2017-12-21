@@ -2,7 +2,7 @@
  * @file 图片下载类
  */
 
-import EventQueues from '@~lisfan/event-queues'
+import EventQueues from '@xkeshi/event-queues'
 
 // 下载成功过的图片列表池
 const loadedImageList = []

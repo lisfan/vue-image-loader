@@ -28,14 +28,14 @@
 ## Install 安装
 
 ```bash
-npm install -S @~lisfan/vue-image-loader
+npm install -S @xkeshi/vue-image-loader
 ```
 
 ## Usage 起步
 
 ```js
 import Vue from 'vue'
-import VueImageLoader from '@~lisfan/vue-image-loader'
+import VueImageLoader from '@xkeshi/vue-image-loader'
 
 // 注册指令
 // 以下是默认值

@@ -2,8 +2,8 @@
  * @file DOM元素壳封装类
  */
 
-import validation from '@~lisfan/validation'
-import Logger from '@~lisfan/logger'
+import validation from '@xkeshi/validation'
+import Logger from '@xkeshi/logger'
 import ImageLoader from './image-loader'
 
 import { addAnimationEnd, removeAnimationEnd } from './utils/animation-handler'
