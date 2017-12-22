@@ -71,13 +71,13 @@ export default {
    * @param {Vue} Vue - VUE类
    * @param {object} [options={}] - 配置选项
    * @param {string} [options.name='directive-image-loader'] - 日志打印器命名空间
-   * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
-   * @param {number} [options.remRatio=100] - rem与px的比例，默认值为100，表示1rem=100px
+   * @param {boolean} [options.debug=false] - 打印器调试模式是否开启
+   * @param {number} [options.remRatio=100] - rem与px的比例，表示1rem=100px
    * @param {object} [options.placeholders={}] - 全局配置占位图片，key名会转换为修饰符
    * @param {string} [options.loadingPlaceholder=''] - 全局配置图片载入中占位图片
    * @param {number} [options.loadingDelay=300] - 载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题
    * @param {number} [options.animationClassName=''] - 动效的样式类
-   * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
+   * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示
    * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示。若关闭，则图片只在初次加载成功进行特效载入，之后不进行特效加载
    */
   install(Vue, {
