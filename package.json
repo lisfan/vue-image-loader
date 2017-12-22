@@ -1,6 +1,6 @@
 {
   "name": "@~lisfan/vue-image-loader",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "vue指令插件-图片加载器",
   "main": "index.js",
   "scripts": {
@@ -34,12 +34,16 @@
   },
   "homepage": "https://github.com/lisfan/vue-image-loader#readme",
   "dependencies": {
-    "@~lisfan/event-queues": "file:../event-queues",
+    "@~lisfan/event-queues": "~1.0.0",
+    "@~lisfan/logger": "~1.3.4",
     "@~lisfan/validation": "~1.0.3",
     "@~lisfan/vue-logger": "~2.1.1"
   },
   "devDependencies": {
     "docdash": "~0.4.0",
     "jsdoc": "~3.5.5"
+  },
+  "peerDependencies": {
+    "vue": "^2.0.0"
   }
 }
