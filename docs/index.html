@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ElementShell.html">ElementShell</a></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ImageElementShell.html">ImageElementShell</a><ul class='methods'><li data-type='method'><a href="ImageElementShell.html#load">load</a></li></ul></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
 </nav>
 
 <div id="main">
@@ -52,17 +52,18 @@
 <h2 id="feature-">Feature 特性</h2>
 <ul>
 <li>真正图片在加载之前会使用透明图片抢先占位（避免在某些浏览器里会出现'叉'），接着才进入加载图片逻辑</li>
-<li>支持载入中图片占位功能</li>
+<li>支持使用在真实图片在下载之前使用载入中图片占位的功能</li>
 <li>若真正图片请求失败时，使用加载失败的占位图片代替，占位图片也请求失败时，则会回滚使用透明图片代替（避免在某些浏览器里会出现'叉'）</li>
 </ul>
 <h2 id="detail-">Detail 详情</h2>
 <ul>
 <li>[注]：若图片地址需要在请求接口完成后才能取到真实地址，则需要保证接口请求完成再触发该指令，否则会因为空地址而请求了占位图片</li>
 <li>支持img标签或者非img标签的背景图片加载</li>
-<li>图片地址变化时，会自动响应图片更新</li>
+<li>真实图片地址变化时，会自动响应图片更新</li>
 <li>若图片已加载过，那么下一次再加载该图片时会直接显示，会忽略图片加载的动效，你可以通过设置指令的<code>.force</code>修饰词来决定是否强制启用每次动效载入</li>
 <li>可选的自定义目标DOM的宽高尺寸，宽高之间使用英文字母<code>x</code>符风格，当只指定宽度时，高度将等同于宽度，如：v-image-loader:300x400，（假设UI稿尺寸是基于设备物理尺寸放大2倍的基础上设计的，一般直接取ui稿的尺寸即可，内部会根据remRatio（默认为1：100）配置项自动计算成rem单位）</li>
-<li>可选的自定义图片载入动效类名，如：v-image-loader=&quot;'mj-ani-fadeIn'&quot;</li>
+<li>支持设置默认的载入中占位图片以及默认的加载失败占位图片配置枚举</li>
+<li>支持可选的自定义图片载入动效类名，如：v-image-loader=&quot;'mj-ani-fadeIn'&quot;</li>
 <li>动画样式的规则参考了<code>vue</code>的<code>transition</code>组件定义过渡的方式，动画样式定义时有如下规则:<ul>
 <li>图片加载时DOM更改样式为'mj-ani-fadeIn-enter'，可以在这个类名上定义一些基础样式</li>
 <li>图片加载过程中DOM更改为'mj-ani-fadeIn-enter-active'，可以在这个类名上定义真正需要动画的样式</li>
@@ -70,7 +71,6 @@
 <li>暂时没有图片移除动效</li>
 </ul>
 </li>
-<li>支持设置默认的载入中占位图片以及默认的加载失败占位图片配置枚举</li>
 </ul>
 <h2 id="install-">Install 安装</h2>
 <pre class="prettyprint source lang-bash"><code>npm install -S @~lisfan/vue-image-loader</code></pre><h2 id="usage-">Usage 起步</h2>
@@ -80,17 +80,20 @@ import VueImageLoader from '@~lisfan/vue-image-loader'
 // 注册指令
 // 以下是默认值
 Vue.use(VueImageLoader,{
+    // 以下均是默认值
+    name:'directive-image-loader',
     debug: false, // 关闭调试模式
     remRatio: 100, // rem和px的比例
-    animate: true, // 开启动效
-    force: false, // 每次加载动效
-    loadingDelay: 300, // 载入中占位图片显示延迟时间
-    loadingPlaceholder: 'path/to/image', // 载入中占位图片地址
     placeholders: { // 内置一些占位图片枚举，方便进行快速引用
       avatar: 'path/to/image'
-    }
+    },
+    loadingDelay: 300, // 载入中占位图片显示延迟时间
+    loadingPlaceholder: 'path/to/image', // 载入中占位图片地址
+    animationClassName = '', // 动效产式
+    animate: true, // 开启动效
+    force: false, // 每次加载动效
 })</code></pre><pre class="prettyprint source lang-html"><code>// 在img标签上使用
-// 调用格式：&lt;img :loading-placeholder=&quot;自定义载入中占位图片&quot; :placeholder=&quot;自定义失败占位图片地址&quot; :image-src=&quot;请求图片地址&quot; v-image-loader:[宽x高].[强制每次加载动效].[调用内置占位图片]=&quot;动效类名&quot; />
+// 调用格式：&lt;img :src=&quot;源图片地址（可不要，如果设置，则loading-placeholder则无效）&quot; :loading-placeholder=&quot;自定义载入中占位图片&quot; :placeholder=&quot;自定义失败占位图片地址&quot; :image-src=&quot;请求图片地址&quot; v-image-loader:[宽x高].[强制每次加载动效].[调用内置占位图片]=&quot;动效类名&quot; />
 
 // 最简单的调用，若图片不存在，则调用预设的失败占位图片
 &lt;img :image-src=&quot;'http://domain/src.png'&quot; v-image-loader.avatar />
@@ -109,7 +112,7 @@ Vue.use(VueImageLoader,{
 
 // 支持在非image标签上使用：区别在于图片会被当成背景图
 &lt;!img :image-src=&quot;http://domain/src.png&quot; v-image-loader.avatar>&lt;/!img></code></pre><h2 id="imageloader">ImageLoader</h2>
-<h2 id="-">图片加载器 模块功能（未来独立）</h2>
+<h2 id="-">图片加载器 模块功能（未来独立剥出）</h2>
 <h2 id="feature-">Feature 特性</h2>
 <ul>
 <li><code>ImageLoader#load</code>和<code>ImageLoader#fetch</code>方法均会触发图片事件队列，事件队列的执行结果将作为resolve的值抛出</li>
@@ -118,6 +121,7 @@ Vue.use(VueImageLoader,{
 <h2 id="detail-">Detail 详情</h2>
 <ul>
 <li>使用<code>ImageLoader#fetch</code>会比<code>ImageLoader#load</code>方法可多获取两个实列属性：<code>ImageLoader#$mime</code>图片MIME类型和<code>ImageLoader#$size</code>图片容量容量</li>
+<li>内建图片成功下载池管理列表，若已下载成功过的图片，再次下载时，返回的<code>ImageLoader#loaded</code>实例属性为true</li>
 </ul></article>
     </section>
 
@@ -134,7 +138,7 @@ Vue.use(VueImageLoader,{
 <header>
     
         <h2>
-        element-shell.js
+        image-element-shell.js
         </h2>
         
     
@@ -150,14 +154,11 @@ Vue.use(VueImageLoader,{
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="element-shell.js.html">element-shell.js</a>, <a href="element-shell.js.html#line1">line 1</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
     
-    <dt class="tag-version">Version:</dt>
-    <dd class="tag-version"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
 
     
 
@@ -173,13 +174,6 @@ Vue.use(VueImageLoader,{
 
     
 
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li><a href="mailto:goolisfan@gmail.com">lisfan</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -199,7 +193,7 @@ Vue.use(VueImageLoader,{
 
 
         
-            <div class="description"><p>DOM元素壳封装类</p></div>
+            <div class="description"><p>Image元素节点封装类</p></div>
         
 
         
@@ -259,9 +253,6 @@ Vue.use(VueImageLoader,{
     
 
     
-    <dt class="tag-version">Version:</dt>
-    <dd class="tag-version"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
 
     
 
@@ -277,13 +268,6 @@ Vue.use(VueImageLoader,{
 
     
 
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li><a href="mailto:goolisfan@gmail.com">lisfan</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -363,9 +347,6 @@ Vue.use(VueImageLoader,{
     
 
     
-    <dt class="tag-version">Version:</dt>
-    <dd class="tag-version"><ul class="dummy"><li>1.2.0</li></ul></dd>
-    
 
     
 
@@ -381,13 +362,6 @@ Vue.use(VueImageLoader,{
 
     
 
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li><a href="mailto:goolisfan@gmail.com">lisfan</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -443,7 +417,7 @@ Vue.use(VueImageLoader,{
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Dec 20 2017 09:49:26 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 13:40:53 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

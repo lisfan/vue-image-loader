@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ElementShell.html">ElementShell</a></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ImageElementShell.html">ImageElementShell</a><ul class='methods'><li data-type='method'><a href="ImageElementShell.html#load">load</a></li></ul></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
 </nav>
 
 <div id="main">
@@ -69,7 +69,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line186">line 186</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line205">line 205</a>
     </li></ul></dd>
     
 
@@ -225,7 +225,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line200">line 200</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line219">line 219</a>
     </li></ul></dd>
     
 
@@ -390,7 +390,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line249">line 249</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -466,7 +466,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line260">line 260</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line279">line 279</a>
     </li></ul></dd>
     
 
@@ -542,7 +542,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line273">line 273</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -585,7 +585,7 @@
 
 
 <div class="description">
-    <p>获取image实例对应图片的地址<br>[注] 请确保在调用时，图片下载已完成</p>
+    <p>获取image实例的当前图片地址</p>
 </div>
 
 
@@ -618,7 +618,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line287">line 287</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line315">line 315</a>
     </li></ul></dd>
     
 
@@ -661,7 +661,159 @@
 
 
 <div class="description">
-    <p>获取image实例对应图片是否下载完成过</p>
+    <p>获取image实例对应图片是否下载过<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="$status"><span class="type-signature">(readonly) </span>$status<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line339">line 339</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>1.2.2</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>获取image实例对应图片的下载是否成功状态值<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="$loaded"><span class="type-signature">(readonly) </span>$loaded<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line362">line 362</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>1.2.2</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>获取image实例对应图片是否已下载过</p>
 </div>
 
 
@@ -694,7 +846,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line302">line 302</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line377">line 377</a>
     </li></ul></dd>
     
 
@@ -737,7 +889,7 @@
 
 
 <div class="description">
-    <p>获取image实例的设置宽度<br>[注] 请确保在调用时，图片下载已完成</p>
+    <p>获取image实例的设置宽度<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
 </div>
 
 
@@ -770,7 +922,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line317">line 317</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line392">line 392</a>
     </li></ul></dd>
     
 
@@ -813,7 +965,7 @@
 
 
 <div class="description">
-    <p>获取image实例对应图片的真实宽度<br>[注] 请确保在调用时，图片下载已完成</p>
+    <p>获取image实例对应图片的真实宽度<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
 </div>
 
 
@@ -846,7 +998,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line332">line 332</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line407">line 407</a>
     </li></ul></dd>
     
 
@@ -889,7 +1041,7 @@
 
 
 <div class="description">
-    <p>获取image实例的设置高度<br>[注] 请确保在调用时，图片下载已完成</p>
+    <p>获取image实例的设置高度<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
 </div>
 
 
@@ -922,7 +1074,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line347">line 347</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line422">line 422</a>
     </li></ul></dd>
     
 
@@ -965,7 +1117,7 @@
 
 
 <div class="description">
-    <p>获取image实例对应图片的真实高度<br>[注] 请确保在调用时，图片下载已完成</p>
+    <p>获取image实例对应图片的真实高度<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
 </div>
 
 
@@ -998,7 +1150,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line362">line 362</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line437">line 437</a>
     </li></ul></dd>
     
 
@@ -1041,7 +1193,7 @@
 
 
 <div class="description">
-    <p>获取当前文件扩展名<br>[注] 请确保在调用时，图片下载已完成</p>
+    <p>获取当前文件扩展名<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
 </div>
 
 
@@ -1074,7 +1226,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line377">line 377</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line452">line 452</a>
     </li></ul></dd>
     
 
@@ -1150,7 +1302,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line392">line 392</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line467">line 467</a>
     </li></ul></dd>
     
 
@@ -1236,7 +1388,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line216">line 216</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line235">line 235</a>
     </li></ul></dd>
     
 
@@ -1397,7 +1549,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line409">line 409</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line484">line 484</a>
     </li></ul></dd>
     
 
@@ -1645,7 +1797,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line459">line 459</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line543">line 543</a>
     </li></ul></dd>
     
 
@@ -1819,7 +1971,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line512">line 512</a>
+        <a href="image-loader.js.html">image-loader.js</a>, <a href="image-loader.js.html#line608">line 608</a>
     </li></ul></dd>
     
 
@@ -1862,7 +2014,7 @@
 
 
 <div class="description">
-    <p>输出base64格式<br>调用该方法时，请确保$image值存在，或者base64的值存在</p>
+    <p>输出base64格式<br>[注] 请确保在是在调用<a href="ImageLoader.html#load">ImageLoader#load</a>或<a href="ImageLoader.html#fetch">ImageLoader#fetch</a>实例方法后调用该属性</p>
 </div>
 
 
@@ -1986,7 +2138,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Dec 20 2017 09:49:26 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 13:40:53 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

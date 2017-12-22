@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ElementShell.html">ElementShell</a></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ImageElementShell.html">ImageElementShell</a><ul class='methods'><li data-type='method'><a href="ImageElementShell.html#load">load</a></li></ul></li><li><a href="ImageLoader.html">ImageLoader</a><ul class='methods'><li data-type='method'><a href="ImageLoader.html#.config">config</a></li><li data-type='method'><a href="ImageLoader.html#load">load</a></li><li data-type='method'><a href="ImageLoader.html#fetch">fetch</a></li><li data-type='method'><a href="ImageLoader.html#base64">base64</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-EventQueues.html">EventQueues</a></li></ul><h3>Global</h3><ul><li><a href="global.html#install">install</a></li><li><a href="global.html#image-loader">image-loader</a></li></ul>
 </nav>
 
 <div id="main">
@@ -127,7 +127,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="install.js.html">install.js</a>, <a href="install.js.html#line397">line 397</a>
+        <a href="install.js.html">install.js</a>, <a href="install.js.html#line64">line 64</a>
     </li></ul></dd>
     
 
@@ -240,7 +240,7 @@
                 </td>
             
 
-            <td class="description last"><p>Vue构造器类</p></td>
+            <td class="description last"><p>VUE类</p></td>
         </tr>
 
     
@@ -309,6 +309,45 @@
 
         <tr>
             
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>'directive-image-loader'</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>日志打印器命名空间</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>debug</code></td>
             
 
@@ -341,7 +380,7 @@
                 </td>
             
 
-            <td class="description last"><p>是否开启日志调试模式，默认关闭</p></td>
+            <td class="description last"><p>打印器调试模式是否开启</p></td>
         </tr>
 
     
@@ -380,20 +419,20 @@
                 </td>
             
 
-            <td class="description last"><p>rem与px的比例，默认值为100，表示1rem=100px</p></td>
+            <td class="description last"><p>rem与px的比例，表示1rem=100px</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>animate</code></td>
+                <td class="name"><code>placeholders</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">object</span>
 
 
             
@@ -414,90 +453,12 @@
             
                 <td class="default">
                 
-                    <code>true</code>
+                    <code>{}</code>
                 
                 </td>
             
 
-            <td class="description last"><p>是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>force</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>false</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>loadingDelay</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>300</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题</p></td>
+            <td class="description last"><p>全局配置占位图片，key名会转换为修饰符</p></td>
         </tr>
 
     
@@ -543,13 +504,13 @@
 
         <tr>
             
-                <td class="name"><code>placeholders</code></td>
+                <td class="name"><code>loadingDelay</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">number</span>
 
 
             
@@ -570,12 +531,129 @@
             
                 <td class="default">
                 
-                    <code>{}</code>
+                    <code>300</code>
                 
                 </td>
             
 
-            <td class="description last"><p>全局配置占位图片，key名会转换为修饰符</p></td>
+            <td class="description last"><p>载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animationClassName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>''</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>动效的样式类</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>force</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>是否强制开启每次指令绑定或更新进行动效展示。若关闭，则图片只在初次加载成功进行特效载入，之后不进行特效加载</p></td>
         </tr>
 
     
@@ -621,7 +699,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="install.js.html">install.js</a>, <a href="install.js.html#line423">line 423</a>
+        <a href="install.js.html">install.js</a>, <a href="install.js.html#line94">line 94</a>
     </li></ul></dd>
     
 
@@ -664,12 +742,12 @@
 
 
 <div class="description">
-    <p>vue指令：image-loader<br>该指令会从元素节点属性上读取两个值：placeholder和image-src</p>
+    <p>vue指令：image-loader<br>该指令会从元素节点属性上读取以下值</p>
 <ul>
-<li>loading-placeholder - 自定义设置了真实图片初始加载过程中的占位图片</li>
-<li>src - 读取原始图片值，如果设置了该值，则loading-placeholder将无效（为了应对一些场景而设立）</li>
-<li>placeholder -自定义设置了当图片加载失败时，使用该图片占位(优先级高)。若未设定，将读取通过modifiers进行快捷指定的全局配置的占用图片</li>
+<li>src - 读取原图片值，如果设置了该值，则loading-placeholder的设置将无效（为了应对一些场景而设立）</li>
 <li>image-src - 设置了图片'真正'需要加载的图片</li>
+<li>loading-placeholder - 设置了图片加载中的占位图片</li>
+<li>placeholder - 设置了当图片加载失败时，使用的占位图片。也可以不设置该值，而是通过读取指令的modifiers进行快捷指定全局配置的占用图片</li>
 </ul>
 </div>
 
@@ -850,45 +928,6 @@
 
         <tr>
             
-                <td class="name"><code>force</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>false</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>是否启用每次指令绑定或更新，重新进行动效展示修饰符</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>debug</code></td>
             
 
@@ -921,7 +960,85 @@
                 </td>
             
 
-            <td class="description last"><p>是否启用单独启用调试日志，该设定优先级低于指令注册时的debug全局配置</p></td>
+            <td class="description last"><p>是否启用单独启用调试日志</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>是否启用单独启用动效</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>force</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>是否启用启用单独启用强制重新进行动效展示修饰符</p></td>
         </tr>
 
     
@@ -968,7 +1085,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Dec 20 2017 09:49:26 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 13:40:53 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
