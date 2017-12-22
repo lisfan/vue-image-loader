@@ -136,6 +136,7 @@ export default {
 
         // 因需要获取$el的属性，所以必须放在下一帧dom刷新才可以获取到样式
         Vue.nextTick().then(() => {
+
           // 设置目标元素的高宽
           const { width, height } = _actions.getSize(binding, remRatio)
 

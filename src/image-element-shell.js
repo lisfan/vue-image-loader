@@ -139,7 +139,7 @@ const _actions = {
     }
 
     // 减少重绘，注意留空
-    self.$el.style = self.$el.style.cssText + `; width:${self.$width}; height:${self.$height};`
+    self.$el.setAttribute('style', self.$el.style.cssText + `width:${self.$width}; height:${self.$height};`)
   },
   /**
    * 设置dom节点样式类
@@ -178,7 +178,7 @@ const _actions = {
       ? '; position:relative; display:inline-block'
       : '; position:relative'
 
-    container.style = container.style.cssText + otherStyle
+    container.setAttribute('style', container.style.cssText + otherStyle)
 
     bgContent.style = `
       position:absolute;
@@ -199,7 +199,7 @@ const _actions = {
 
     _actions.insertAfter(fragment, self._placeholderNode)
 
-    self.$el.style = self.$el.style.cssText + '; position:relative; z-index:1'
+    self.$el.setAttribute('style', self.$el.style.cssText + '; position:relative; z-index:1')
   },
   /**
    * 载入中占位图片处理完成之后，移除容器节点
