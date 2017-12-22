@@ -68,16 +68,17 @@ export default {
    *
    * @function install
    *
-   * @param {Vue} Vue - Vue构造器类
+   * @param {Vue} Vue - VUE类
    * @param {object} [options={}] - 配置选项
    * @param {string} [options.name='directive-image-loader'] - 日志打印器命名空间
    * @param {boolean} [options.debug=false] - 是否开启日志调试模式，默认关闭
    * @param {number} [options.remRatio=100] - rem与px的比例，默认值为100，表示1rem=100px
-   * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
-   * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示，默认关闭：图片只在初次加载成功进行特效载入，之后不进行特效加载。需要同时确保animate是启用true
-   * @param {number} [options.loadingDelay=300] - 载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题
-   * @param {string} [options.loadingPlaceholder=''] - 全局配置图片载入中占位图片
    * @param {object} [options.placeholders={}] - 全局配置占位图片，key名会转换为修饰符
+   * @param {string} [options.loadingPlaceholder=''] - 全局配置图片载入中占位图片
+   * @param {number} [options.loadingDelay=300] - 载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题
+   * @param {number} [options.animationClassName=''] - 动效的样式类
+   * @param {boolean} [options.animate=true] - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示，默认开启
+   * @param {boolean} [options.force=false] - 是否强制开启每次指令绑定或更新进行动效展示。若关闭，则图片只在初次加载成功进行特效载入，之后不进行特效加载
    */
   install(Vue, {
     name = `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
@@ -87,17 +88,16 @@ export default {
     loadingDelay = ImageElementShell.options.loadingDelay,
     loadingPlaceholder = ImageElementShell.options.loadingPlaceholder,
     animationClassName = ImageElementShell.options.animationClassName,
-    force = ImageElementShell.options.force,
     animate = ImageElementShell.options.animate,
+    force = ImageElementShell.options.force,
   } = {}) {
     /**
      * vue指令：image-loader
-     * 该指令会从元素节点属性上读取两个值：placeholder和image-src
-     * - loading-placeholder - 自定义设置了真实图片初始加载过程中的占位图片
-     * - src - 读取原始图片值，如果设置了该值，则loading-placeholder将无效（为了应对一些场景而设立）
-     * - placeholder -自定义设置了当图片加载失败时，使用该图片占位(优先级高)。若未设定，将读取通过modifiers进行快捷指定的全局配置的占用图片
+     * 该指令会从元素节点属性上读取以下值
+     * - src - 读取原图片值，如果设置了该值，则loading-placeholder的设置将无效（为了应对一些场景而设立）
      * - image-src - 设置了图片'真正'需要加载的图片
-     *
+     * - loading-placeholder - 设置了图片加载中的占位图片
+     * - placeholder - 设置了当图片加载失败时，使用的占位图片。也可以不设置该值，而是通过读取指令的modifiers进行快捷指定全局配置的占用图片
      *
      * @since 1.2.0
      *
@@ -106,8 +106,9 @@ export default {
      * @param {string} [arg=false] - 参数图片宽度尺寸
      * @param {string} [value=false] - 动效样式
      * @param {object} [modifiers] - 修饰符对象，除了force值外，其他值都将当成占位符的快捷指定
-     * @param {boolean} [modifiers.force=false] - 是否启用每次指令绑定或更新，重新进行动效展示修饰符
-     * @param {boolean} [modifiers.debug=false] - 是否启用单独启用调试日志，该设定优先级低于指令注册时的debug全局配置
+     * @param {boolean} [modifiers.debug=false] - 是否启用单独启用调试日志
+     * @param {boolean} [modifiers.animate=false] - 是否启用单独启用动效
+     * @param {boolean} [modifiers.force=false] - 是否启用启用单独启用强制重新进行动效展示修饰符
      */
     Vue.directive(DIRECTIVE_NAMESPACE, {
       /**
@@ -119,7 +120,7 @@ export default {
        *
        * @param {element} $el - 目标dom元素
        * @param {object} binding - 指令对象
-       * @param {VNode} vnode - vue节点对象
+       * @param {VNode} vnode - Vue节点对象
        */
       bind($el, binding, vnode) {
         // 在目标节点上绑定该指令标识
@@ -127,7 +128,7 @@ export default {
 
         const vueLogger = new VueLogger({
           name,
-          debug: binding.debug || debug,
+          debug: binding.modifiers.debug || debug,
           vm: vnode.context,
         })
 
@@ -150,8 +151,8 @@ export default {
             loadingDelay,
             originClassName: $el.getAttribute('class') || '',
             animationClassName: binding.value || animationClassName || '',
+            animate: binding.modifiers.animate || animate,
             force: binding.modifiers.force || force,
-            animate,
           })
 
           const actualSrc = $el.getAttribute('image-src') || ''
@@ -176,17 +177,18 @@ export default {
        *
        * @param {element} $el - 目标dom元素
        * @param {object} binding - 指令对象
-       * @param {VNode} vnode - vue节点对象
+       * @param {VNode} vnode - Vue节点对象
        */
       update($el, binding, vnode) {
         const vueLogger = new VueLogger({
-          name: `${PLUGIN_TYPE}-${DIRECTIVE_NAMESPACE}`,
-          debug: binding.debug || debug,
+          name,
+          debug: binding.modifiers.debug || debug,
           vm: vnode.context,
         })
 
         vueLogger.log('emit update hook!')
 
+        // 获取绑定在节点上的shell实例
         const shell = $el._shell
 
         const actualSrc = $el.getAttribute('image-src') || ''

@@ -1,5 +1,5 @@
 /**
- * @file DOM元素壳封装类
+ * @file Image元素节点封装类
  */
 
 import validation from '@~lisfan/validation'
