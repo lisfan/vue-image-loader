@@ -69,7 +69,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line343">line 343</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line352">line 352</a>
     </li></ul></dd>
     
 
@@ -163,7 +163,198 @@
 
             
 
-            <td class="description last"><p>其他配置选项见<a href="ImageElementShell.html#.options">ImageElementShell.options</a></p></td>
+            <td class="description last"><p>其他配置选项见<a href="ImageElementShell.html#.options">ImageElementShell.options</a></p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Element</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>绑定的dom节点</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>width</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>宽度值，带单位</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>高度值，带单位</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>originSrc</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>原节点图片地址</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>originClassName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>原节点样式名</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -203,7 +394,7 @@
 
         
             
-<h4 class="name" id=".options"><span class="type-signature">(static, readonly) </span>options<span class="type-signature"></span></h4>
+<h4 class="name" id=".options"><span class="type-signature">(static, readonly) </span>options<span class="type-signature"> :object</span></h4>
 
 
 
@@ -214,7 +405,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line358">line 358</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line372">line 372</a>
     </li></ul></dd>
     
 
@@ -299,12 +490,12 @@
             
                 <td class="default">
                 
-                    <code>'ImageElementShell'</code>
+                    <code>'directive-image-loader'</code>
                 
                 </td>
             
 
-            <td class="description last"><p>打印器名称标记</p></td>
+            <td class="description last"><p>日志打印器命名空间</p></td>
         </tr>
 
     
@@ -333,7 +524,181 @@
                 </td>
             
 
-            <td class="description last"><p>打印器调试模式是否开启<br>force   // 是否强制开启每次载入动效<br>   // 若未自定义，则取全局配置force</p></td>
+            <td class="description last"><p>打印器调试模式是否开启</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>placeholders</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>{}</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>全局配置占位图片，key名会转换为修饰符</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>loadingPlaceholder</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>''</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>全局配置图片载入中占位图片</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>loadingDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>300</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animationClassName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>''</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>动效的样式类</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>force</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>是否强制开启每次指令绑定或更新进行动效展示。若关闭，则图片只在初次加载成功进行特效载入，之后不进行特效加载</p></td>
         </tr>
 
     
@@ -350,6 +715,16 @@
 </div>
 
 
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
 
 
 
@@ -369,7 +744,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line476">line 476</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line521">line 521</a>
     </li></ul></dd>
     
 
@@ -445,7 +820,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line487">line 487</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line532">line 532</a>
     </li></ul></dd>
     
 
@@ -521,7 +896,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line500">line 500</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line545">line 545</a>
     </li></ul></dd>
     
 
@@ -597,7 +972,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line513">line 513</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line558">line 558</a>
     </li></ul></dd>
     
 
@@ -673,7 +1048,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line528">line 528</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line580">line 580</a>
     </li></ul></dd>
     
 
@@ -749,7 +1124,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line541">line 541</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line593">line 593</a>
     </li></ul></dd>
     
 
@@ -815,7 +1190,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line556">line 556</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line615">line 615</a>
     </li></ul></dd>
     
 
@@ -891,7 +1266,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line569">line 569</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line628">line 628</a>
     </li></ul></dd>
     
 
@@ -957,7 +1332,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line584">line 584</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line650">line 650</a>
     </li></ul></dd>
     
 
@@ -965,7 +1340,7 @@
 
     
     <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
+    <dd class="tag-since"><ul class="dummy"><li>1.2.2</li></ul></dd>
     
 
     
@@ -1000,7 +1375,7 @@
 
 
 <div class="description">
-    <p>获取实例真实图片是否加载成功过</p>
+    <p>获取实例真实图片是否已成功加载过一次</p>
 </div>
 
 
@@ -1033,7 +1408,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line597">line 597</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line663">line 663</a>
     </li></ul></dd>
     
 
@@ -1109,7 +1484,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line610">line 610</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line676">line 676</a>
     </li></ul></dd>
     
 
@@ -1185,7 +1560,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line623">line 623</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line689">line 689</a>
     </li></ul></dd>
     
 
@@ -1261,7 +1636,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line636">line 636</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line702">line 702</a>
     </li></ul></dd>
     
 
@@ -1337,7 +1712,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line649">line 649</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line715">line 715</a>
     </li></ul></dd>
     
 
@@ -1413,7 +1788,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line662">line 662</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line728">line 728</a>
     </li></ul></dd>
     
 
@@ -1489,7 +1864,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line675">line 675</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line741">line 741</a>
     </li></ul></dd>
     
 
@@ -1575,7 +1950,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line437">line 437</a>
+        <a href="image-element-shell.js.html">image-element-shell.js</a>, <a href="image-element-shell.js.html#line756">line 756</a>
     </li></ul></dd>
     
 
@@ -1730,7 +2105,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 10:47:21 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 13:40:53 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

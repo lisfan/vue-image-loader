@@ -51,7 +51,7 @@ const _actions = {
    * @since 1.2.0
    *
    * @param {string[]} props - 作对打包对象的键名
-   * @param {*[]} values - 作对打包对象的值
+   * @param {Array} values - 作对打包对象的值
    *
    * @returns {object}
    */

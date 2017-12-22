@@ -90,7 +90,7 @@ const _actions = {
    * @since 1.2.0
    *
    * @param {string[]} props - 作对打包对象的键名
-   * @param {array} values - 作对打包对象的值
+   * @param {Array} values - 作对打包对象的值
    *
    * @returns {object}
    */
@@ -137,12 +137,12 @@ const _actions = {
    *
    * @since 1.2.0
    *
-   * @param {Element} el - 目标DOM节点
+   * @param {Element} $el - 目标DOM节点
    * @param {object} styles - 设置的样式字段
    */
-  setElementStyles(el, styles) {
+  setElementStyles($el, styles) {
     Object.entries(styles).forEach(([prop, value]) => {
-      el.style.setProperty(prop, value)
+      $el.style.setProperty(prop, value)
     })
   },
   /**
@@ -183,6 +183,8 @@ const _actions = {
   /**
    * 设置dom节点样式类
    *
+   * @since 1.2.0
+   *
    * @param {ImageElementShell} self - 实例自身
    * @param {string} classname - 样式名
    */
@@ -191,6 +193,8 @@ const _actions = {
   },
   /**
    * 创建存在占位图片时的包裹节点
+   *
+   * @since 1.2.0
    *
    * @param {ImageElementShell} self - 实例自身
    */
@@ -238,6 +242,8 @@ const _actions = {
   },
   /**
    * 载入中占位图片处理完成之后，移除容器节点
+   *
+   * @since 1.2.0
    *
    * @param {ImageElementShell} self - 实例自身
    *
@@ -343,6 +349,9 @@ const _actions = {
 
   /**
    * 开始进行动效
+   *
+   * @since 1.2.0
+   *
    * @param {ImageElementShell} self - 实例自身
    *
    * @returns {undefined}
@@ -389,25 +398,25 @@ class ImageElementShell {
    * @readonly
    * @memberOf ImageElementShell
    *
-   * @property {string} name='ImageElementShell' - 打印器名称标记
+   * @type {object}
+   * @property {string} name='directive-image-loader' - 日志打印器命名空间
    * @property {boolean} debug=false - 打印器调试模式是否开启
-   * force   // 是否强制开启每次载入动效
-   // 若未自定义，则取全局配置force
+   * @property {object} placeholders={} - 全局配置占位图片，key名会转换为修饰符
+   * @property {string} loadingPlaceholder='' - 全局配置图片载入中占位图片
+   * @property {number} loadingDelay=300 - 载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题
+   * @property {number} animationClassName='' - 动效的样式类
+   * @property {boolean} animate=true - 是否启用动效载入，全局性动效开关，比如为了部分机型，可能会关闭动效的展示
+   * @property {boolean} force=false - 是否强制开启每次指令绑定或更新进行动效展示。若关闭，则图片只在初次加载成功进行特效载入，之后不进行特效加载
    */
   static options = {
     name: 'ImageElementShell',
     debug: false,
-    // el: null,
-    // width: '',
-    // height: '',
-    // originSrc: '',
     placeholder: {},
     loadingPlaceholder: '',
     loadingDelay: 300,
-    // originClassName: '',
     animationClassName: '',
-    force: false,
     animate: true,
+    force: false,
   }
 
   /**
@@ -416,6 +425,11 @@ class ImageElementShell {
    * @see ImageElementShell.options
    *
    * @param {object} options - 其他配置选项见{@link ImageElementShell.options}
+   * @param {Element} options.el - 绑定的dom节点
+   * @param {string} [options.width] - 宽度值，带单位
+   * @param {string} [options.height] - 高度值，带单位
+   * @param {string} [options.originSrc] - 原节点图片地址
+   * @param {string} [options.originClassName] - 原节点样式名
    */
   constructor(options) {
     this.$options = {
@@ -463,45 +477,76 @@ class ImageElementShell {
   }
 
   /**
-   * 请求图片资源
+   * ImageLoader实例
    *
-   * @since 1.2.1
+   * @since 1.2.2
    *
-   * @async
-   *
-   * @param {string} actualSrc - 请求图片地址
-   *
-   * @returns {Promise}
+   * @private
    */
-  load(actualSrc) {
-    this._actualSrc = actualSrc
-    this._currentSrc = actualSrc
+  _imageLoader = undefined
 
-    // 如果未进行过动效，且这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
+  /**
+   * Logger实例
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
+  _logger = undefined
 
-    // 载入图片
-    return this._imageLoader.load(actualSrc).then((result) => {
-      this._canAnimate = this.$loaded &amp;&amp; this._imageLoader.$loaded &amp;&amp; !this.$force
-
-      _actions.startAnimationing(this)
-      return Promise.resolve(result)
-    }).catch((err) => {
-      this._canAnimate = false
-      this._loaded = false
-      return Promise.reject(err)
-    })
-  }
-
+  /**
+   * 执行loadingPlaceholder时的包裹器父节点
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _parentNode = undefined
+
+  /**
+   * 执行loadingPlaceholder时的包裹器父节点
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _placeholderNode = undefined
+
+  /**
+   * 执行loadingPlaceholder时延迟计时器
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _loadingTimeouter = undefined
 
+  /**
+   * 执行loadingPlaceholder时延迟技术器
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _originClassNameList = undefined
-  _animationing = undefined
+
+  /**
+   * 是否可以执行动效
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _canAnimate = undefined
 
-  _imageLoader = undefined
-  _logger = undefined
+  /**
+   * 是否正在执行动画效果中
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
+  _animationing = undefined
 
   /**
    * 实例初始配置项
@@ -553,6 +598,13 @@ class ImageElementShell {
     return this.$options.height
   }
 
+  /**
+   * 存取当前图片的地址
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _currentSrc = undefined
 
   /**
@@ -581,6 +633,13 @@ class ImageElementShell {
     this._currentSrc = val
   }
 
+  /**
+   * 存取真实图片的地址
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _actualSrc = undefined
 
   /**
@@ -609,12 +668,19 @@ class ImageElementShell {
     this._actualSrc = val
   }
 
+  /**
+   * 存取当前实例是否已成功加载过一次
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _loaded
 
   /**
-   * 获取实例真实图片是否加载成功过
+   * 获取实例真实图片是否已成功加载过一次
    *
-   * @since 1.0.0
+   * @since 1.2.2
    *
    * @getter
    *
@@ -715,6 +781,36 @@ class ImageElementShell {
     return this.$options.animate
   }
 
+  /**
+   * 请求图片资源
+   *
+   * @since 1.2.1
+   *
+   * @async
+   *
+   * @param {string} actualSrc - 请求图片地址
+   *
+   * @returns {Promise}
+   */
+  load(actualSrc) {
+    this._actualSrc = actualSrc
+    this._currentSrc = actualSrc
+
+    // 载入图片
+    return this._imageLoader.load(actualSrc).then((result) => {
+      // 如果未进行过动效，且这张图片已下载过，且未开启强制动效，则判断图片已加载完毕，否则将进行动效载入
+      this._canAnimate = this.$loaded &amp;&amp; this._imageLoader.$loaded &amp;&amp; !this.$force
+
+      // 开始执行动效
+      _actions.startAnimationing(this)
+      return Promise.resolve(result)
+    }).catch((err) => {
+      this._canAnimate = false
+      this._loaded = false
+
+      return Promise.reject(err)
+    })
+  }
 }
 
 export default ImageElementShell</code></pre>
@@ -729,7 +825,7 @@ export default ImageElementShell</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 10:47:21 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 13:40:53 GMT+0800 (CST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
