@@ -4,7 +4,7 @@
 
 import EventQueues from '@~lisfan/event-queues'
 
-// 下载成功过的图片列表池
+// 下载成功过的图片地址列表池
 const loadedImageList = []
 
 // base64格式匹配正则表达式
@@ -15,8 +15,11 @@ const _actions = {
   /**
    * 判断请求的图片地址与已请求过的地址是否是一致的
    *
-   * @param self
-   * @param imageSrc
+   * @since 1.2.0
+   *
+   * @param {ImageLoader} self - 实例自身
+   * @param {string} imageSrc - 图片地址
+   *
    * @returns {boolean}
    */
   isSameResource(self, imageSrc) {
@@ -28,6 +31,8 @@ const _actions = {
    * - base64格式
    * - 纯固定扩展结尾
    * - 兼容类似又拍云的图片处理APi，如`path/to/source.jpg!both/100x100`这样的格式
+   *
+   * @since 1.2.0
    *
    * @param {string} imageSrc - 图片地址
    *
@@ -50,6 +55,8 @@ const _actions = {
   /**
    * 根据图片的后缀获取图片的mime类型
    *
+   * @since 1.2.0
+   *
    * @param {string} ext - 后缀名
    *
    * @returns {string} - 返回mime类型
@@ -66,6 +73,10 @@ const _actions = {
   },
   /**
    * 简易ajax请求封装
+   *
+   * @since 1.2.0
+   *
+   * @async
    *
    * @param {string} url - 请求链接
    * @param {string} [method='get'] - 请求方法
@@ -88,7 +99,6 @@ const _actions = {
       })
 
       xhr.addEventListener('error', (err) => {
-        console.log('error')
         reject(err)
       })
 
@@ -97,6 +107,10 @@ const _actions = {
   },
   /**
    * blob转dataURL
+   *
+   * @since 1.2.0
+   *
+   * @async
    *
    * @param {Blob} blob - blob数据
    *
@@ -119,6 +133,8 @@ const _actions = {
   },
   /**
    * dataURL转blob
+   *
+   * @since 1.2.0
    *
    * @param {string} dataURL - dataURL数据
    *
@@ -144,7 +160,9 @@ const _actions = {
   /**
    * canvas 转 dataURL
    *
-   * @param {ImageLoader} self - 当前实例
+   * @since 1.2.0
+   *
+   * @param {ImageLoader} self - 实例自身
    * @param {HTMLImageElement} image - image实例
    * @param {string} [format] - 输出的图片格式，默认保存原图片后缀格式
    *
@@ -168,20 +186,21 @@ const _actions = {
 }
 
 /**
+ * ImaqgeLoader继承自EventQueues类
+ *
  * @external EventQueues
  *
  * @see {@link http://lisfan.github.io/event-queues|EventQueues}
  */
 
 /**
- * @extends EventQueues
- *
  * @description
  * [注] 继承了EventQueues类，附加的实例方法和属性请至{@link http://lisfan.github.io/event-queues|EventQueues API}文档查看
  *
  * @classdesc 图片下载类
  *
  * @class
+ * @extends EventQueues
  */
 class ImageLoader extends EventQueues {
   /**
@@ -259,10 +278,17 @@ class ImageLoader extends EventQueues {
    */
   $blob = undefined
 
+  /**
+   * 存取实例的当前图片地址
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _currentSrc = undefined
 
   /**
-   * 图片的地址
+   * 获取image实例的当前图片地址
    *
    * @since 1.0.0
    *
@@ -276,7 +302,8 @@ class ImageLoader extends EventQueues {
   }
 
   /**
-   * 获取image实例对应图片是否下载完成过
+   * 获取image实例对应图片是否下载过
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
@@ -289,12 +316,20 @@ class ImageLoader extends EventQueues {
     return this.$image && this.$image.complete
   }
 
+  /**
+   * 存取实例的对应图片的下载是否成功状态值
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _status = undefined
 
   /**
    * 获取image实例对应图片的下载是否成功状态值
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
-   * @since 1.2.1
+   * @since 1.2.2
    *
    * @getter
    * @readonly
@@ -305,12 +340,19 @@ class ImageLoader extends EventQueues {
     return this._status
   }
 
+  /**
+   * 存取实例的对应图片是否已下载过状态
+   *
+   * @since 1.2.2
+   *
+   * @private
+   */
   _loaded = undefined
 
   /**
    * 获取image实例对应图片是否已下载过
    *
-   * @since 1.0.0
+   * @since 1.2.2
    *
    * @getter
    * @readonly
@@ -323,7 +365,7 @@ class ImageLoader extends EventQueues {
 
   /**
    * 获取image实例的设置宽度
-   * [注] 请确保在调用时，图片下载已完成
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
@@ -338,7 +380,7 @@ class ImageLoader extends EventQueues {
 
   /**
    * 获取image实例对应图片的真实宽度
-   * [注] 请确保在调用时，图片下载已完成
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
@@ -353,7 +395,7 @@ class ImageLoader extends EventQueues {
 
   /**
    * 获取image实例的设置高度
-   * [注] 请确保在调用时，图片下载已完成
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
@@ -368,7 +410,7 @@ class ImageLoader extends EventQueues {
 
   /**
    * 获取image实例对应图片的真实高度
-   * [注] 请确保在调用时，图片下载已完成
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
@@ -383,7 +425,7 @@ class ImageLoader extends EventQueues {
 
   /**
    * 获取当前文件扩展名
-   * [注] 请确保在调用时，图片下载已完成
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
@@ -482,7 +524,6 @@ class ImageLoader extends EventQueues {
       })
 
       this.$image.src = imageSrc
-
     })
   }
 
@@ -554,7 +595,7 @@ class ImageLoader extends EventQueues {
 
   /**
    * 输出base64格式
-   * 调用该方法时，请确保$image值存在，或者base64的值存在
+   * [注] 请确保在是在调用{@link ImageLoader#load}或{@link ImageLoader#fetch}实例方法后调用该属性
    *
    * @since 1.0.0
    *
