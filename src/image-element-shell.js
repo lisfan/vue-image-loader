@@ -393,8 +393,9 @@ class ImageElementShell {
    * @param {string} [options.originClassName] - 原节点样式名
    */
   constructor(options) {
+    const ctr = this.constructor
     this.$options = {
-      ...ImageElementShell.options,
+      ...ctr.options,
       ...options
     }
 

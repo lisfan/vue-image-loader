@@ -217,30 +217,32 @@ class ImageLoader extends EventQueues {
    * @property {string} name='ImageLoader' - 打印器名称标记
    */
   static options = {
+    ...EventQueues.options,
     name: 'ImageLoader',
     debug: false,
   }
 
-  /**
-   * 更新默认配置选项
-   *
-   * @since 1.0.0
-   *
-   * @see ImageLoader.options
-   *
-   * @param {object} options - 其他配置选项见{@link ImageLoader.options}
-   *
-   * @returns {ImageLoader}
-   */
-  static config(options) {
-    // 以内置配置为优先
-    ImageLoader.options = {
-      ...ImageLoader.options,
-      ...options
-    }
-
-    return this
-  }
+  // /**
+  //  * 更新默认配置选项
+  //  *
+  //  * @since 1.0.0
+  //  *
+  //  * @see ImageLoader.options
+  //  *
+  //  * @param {object} options - 其他配置选项见{@link ImageLoader.options}
+  //  *
+  //  * @returns {ImageLoader}
+  //  */
+  // static config(options) {
+  //   const ctr = this
+  //   // 以内置配置为优先
+  //   ctr.options = {
+  //     ...ctr.options,
+  //     ...options
+  //   }
+  //
+  //   return ctr
+  // }
 
   /**
    * 构造函数
@@ -250,10 +252,7 @@ class ImageLoader extends EventQueues {
    * @param {object} options - 其他配置选项见{@link ImageLoader.options}
    */
   constructor(options) {
-    super({
-      ...ImageLoader.options,
-      ...options
-    })
+    super(options)
   }
 
   /**
