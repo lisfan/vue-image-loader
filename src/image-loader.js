@@ -213,8 +213,8 @@ class ImageLoader extends EventQueues {
    * @memberOf ImageLoader
    *
    * @type {object}
-   * @property {boolean} debug=false - 打印器调试模式是否开启
-   * @property {string} name='ImageLoader' - 打印器名称标记
+   * @property {string} name='ImageLoader' - 日志打印器名称标记
+   * @property {boolean} debug=false - 日志打印器调试模式开启状态
    */
   static options = {
     ...EventQueues.options,
@@ -234,14 +234,14 @@ class ImageLoader extends EventQueues {
   //  * @returns {ImageLoader}
   //  */
   // static config(options) {
-  //   const ctr = this
+  //   const ctor = this
   //   // 以内置配置为优先
-  //   ctr.options = {
-  //     ...ctr.options,
+  //   ctor.options = {
+  //     ...ctor.options,
   //     ...options
   //   }
   //
-  //   return ctr
+  //   return ctor
   // }
 
   /**

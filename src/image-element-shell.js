@@ -360,8 +360,8 @@ class ImageElementShell {
    * @memberOf ImageElementShell
    *
    * @type {object}
-   * @property {string} name='directive-image-loader' - 日志打印器命名空间
-   * @property {boolean} debug=false - 打印器调试模式是否开启
+   * @property {string} name='directive-image-loader' - 日志打印器名称标记
+   * @property {boolean} debug=false - 日志打印器调试模式开启状态
    * @property {object} placeholders={} - 全局配置占位图片，key名会转换为修饰符
    * @property {string} loadingPlaceholder='' - 全局配置图片载入中占位图片
    * @property {number} loadingDelay=300 - 载入中占位图片的延迟加载时间，避免出现载入中图片瞬间切换为真实图片的闪烁问题
@@ -393,9 +393,9 @@ class ImageElementShell {
    * @param {string} [options.originClassName] - 原节点样式名
    */
   constructor(options) {
-    const ctr = this.constructor
+    const ctor = this.constructor
     this.$options = {
-      ...ctr.options,
+      ...ctor.options,
       ...options
     }
 
